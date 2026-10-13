@@ -52,7 +52,7 @@ jobs:
         continue-on-error: true
         run: python src/independent_population_consistency.py
       - name: Calibrate and validate GCP fossil CO2 as independently published target
-        run: python src/gcp_independent_target_calibration.py
+        run: python -m src.gcp_independent_target_calibration
       - name: Preserve evidence
         if: always()
         uses: actions/upload-artifact@v4
