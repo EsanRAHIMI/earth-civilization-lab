@@ -23,7 +23,12 @@ def collect(root,fetcher=request,years=(2000,2023)):
  for name,(code,unit,sector) in INDICATORS.items():
   url=f'https://api.worldbank.org/v2/country/{";".join(COUNTRIES)}/indicator/{code}?format=json&date={years[0]}:{years[1]}&per_page=20000'
   body=fetcher(url);parsed=json.loads(body)
-  if not isinstance(parsed,list) or len(parsed)!=2 or not isinstance(parsed[1],list) or int(parsed[0].get('pages',1))!=1:raise ValueError('World Bank response/pagination invalid: '+code)
+  if not isinstance(parsed,list) or len(parsed)!=2 or not isinstance(parsed[0],dict):raise ValueError('World Bank response invalid: '+code+' '+str(parsed)[:400])
+  if not isinstance(parsed[1],list):
+   # WB returns [metadata, null] for indicators with zero records; preserve missingness, do not invent data.
+   if parsed[1] is None and int(parsed[0].get('total',0))==0:parsed[1]=[]
+   else:raise ValueError('World Bank observations unavailable: '+code+' '+str(parsed)[:400])
+  if int(parsed[0].get('pages',1))!=1:raise ValueError('World Bank pagination incomplete: '+code)
   (raw/(name+'.json')).write_bytes(body)
   count=0;seen=set()
   for item in parsed[1]:
