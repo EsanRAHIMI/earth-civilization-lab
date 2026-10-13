@@ -1,0 +1,37 @@
+name: EarthLab empirical rolling benchmarks
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/empirical_benchmarks.py'
+      - 'tests/test_empirical_benchmarks.py'
+      - '.github/workflows/rolling-benchmarks.yml'
+permissions:
+  contents: read
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run full test suite
+        run: python -m unittest discover -s tests -v
+      - name: Fetch observed World Bank panel
+        run: python src/pipeline.py fetch
+      - name: Verify raw data integrity
+        run: python src/validate.py
+      - name: Rolling-origin retrospective backtest
+        run: python src/empirical_benchmarks.py --start 2016 --end 2024
+      - name: Upload audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: empirical-rolling-benchmarks-and-sources
+          path: |
+            data/
+            reports/
+          retention-days: 90
