@@ -69,6 +69,8 @@ jobs:
         run: python -m src.gcb_separate_sink_calibration
       - name: Audit reservoir identifiability and millennial uncertainty
         run: python -m src.reservoir_calibration_audit
+      - name: Audit finite-horizon empirical coverage and millennial probability claims
+        run: python -m src.long_horizon_uncertainty_audit
       - name: Enforce operational scientific evidence readiness gate
         run: python src/operational_readiness.py
       - name: Audit whether thousand-year scientific forecast claims are justified
