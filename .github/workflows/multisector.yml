@@ -6,6 +6,7 @@ on:
     paths:
       - 'src/multisector.py'
       - 'src/calibration_readiness.py'
+      - 'src/historical_calibration.py'
       - 'tests/test_multisector.py'
       - '.github/workflows/multisector.yml'
 permissions:
@@ -25,6 +26,8 @@ jobs:
         run: python src/multisector.py
       - name: Assess calibration readiness from actual coverage
         run: python src/calibration_readiness.py
+      - name: Calibrate historical energy-economy-GHG association and temporal holdout
+        run: python src/historical_calibration.py
       - name: Preserve evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -33,4 +36,6 @@ jobs:
           path: |
             data/multisector_*
             reports/multisector_*
+            reports/calibration_*
+            reports/historical_calibration_*
           retention-days: 90
