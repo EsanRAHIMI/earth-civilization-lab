@@ -20,8 +20,8 @@ def load(kind,root):
  header=next((i for i,row in enumerate(rows) if any(x.strip().lower()=='year' for x in row)),None)
  if header is None:raise ValueError('Missing year column '+kind)
  cols=[x.strip().lower() for x in rows[header]]
- ycol=cols.index('year');vcols=[i for i,x in enumerate(cols) if x=='gcb']
- if len(vcols)!=1:raise ValueError('Expected one GCB sink column '+repr(cols))
+ ycol=cols.index('year');vcols=[i for i,x in enumerate(cols) if x==('net' if kind=='land-use-change-emissions' else 'gcb')]
+ if len(vcols)!=1:raise ValueError('Expected one GCB or net land-use column '+repr(cols))
  values={}
  for row in rows[header+1:]:
   try:y=int(row[ycol]);v=float(row[vcols[0]])
