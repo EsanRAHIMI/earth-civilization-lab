@@ -1,0 +1,36 @@
+name: EarthLab empirical retrieval and evaluation
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 3 1 * *'
+permissions:
+  contents: read
+jobs:
+  empirical:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Fetch real World Bank observations
+        run: python src/pipeline.py fetch --root .
+      - name: Verify hashes and coverage
+        run: python src/validate.py
+      - name: Historical holdout baseline
+        run: python src/pipeline.py evaluate --root .
+      - name: Preserve evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: earthlab-empirical-evidence
+          path: |
+            data/
+            reports/
+          if-no-files-found: warn
+          retention-days: 90
