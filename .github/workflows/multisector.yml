@@ -17,6 +17,7 @@ on:
       - 'src/gcp_independent_target_calibration.py'
       - 'src/operational_readiness.py'
       - 'src/millennium_claim_audit.py'
+      - 'src/noaa_gcp_carbon_hindcast.py'
       - 'tests/test_multisector.py'
       - '.github/workflows/multisector.yml'
 permissions:
@@ -55,6 +56,8 @@ jobs:
         run: python src/independent_population_consistency.py
       - name: Calibrate and validate GCP fossil CO2 as independently published target
         run: python -m src.gcp_independent_target_calibration
+      - name: Fit physical atmospheric carbon response and test NOAA historical observations
+        run: python src/noaa_gcp_carbon_hindcast.py
       - name: Enforce operational scientific evidence readiness gate
         run: python src/operational_readiness.py
       - name: Audit whether thousand-year scientific forecast claims are justified
@@ -78,6 +81,9 @@ jobs:
             reports/gcp_independent_target_calibration.json
             reports/operational_readiness.json
             reports/millennium_claim_audit.json
+            reports/noaa_gcp_carbon_hindcast.json
+            reports/noaa_gcp_carbon_hindcast_rows.csv
+            data/independent_raw/noaa_global_annual_co2.csv
             data/independent_raw/*
             data/bitcoin_*
           retention-days: 90
