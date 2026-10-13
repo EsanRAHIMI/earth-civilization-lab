@@ -1,0 +1,31 @@
+name: EarthLab exploratory scenario stress test
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/civilization.py'
+      - 'tests/test_civilization.py'
+      - '.github/workflows/scenario.yml'
+permissions:
+  contents: read
+jobs:
+  scenarios:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: All unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Execute thousand-year exploratory stress tests
+        run: python src/civilization.py --root . --years 1000 --replicates 60
+      - name: Upload full reproducible results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: exploratory-scenarios-not-forecasts
+          path: reports/scenario_*
+          retention-days: 90
