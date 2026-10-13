@@ -4,7 +4,7 @@ Independent-source validation and causal calibration are NOT performed here.
 import argparse,csv,datetime,hashlib,json,math,pathlib,urllib.request,collections
 COUNTRIES=['USA','CHN','IND','BRA','ZAF','DEU','JPN','NGA','IDN','ARE']
 INDICATORS={
- 'climate_co2_per_capita':('EN.ATM.CO2E.PC','tCO2_per_person','climate'),
+ 'climate_ghg_per_capita':('EN.GHG.CO2.PC.CE.AR5','tCO2e_per_person','climate'),
  'energy_use_per_capita':('EG.USE.PCAP.KG.OE','kg_oil_equivalent_per_person','energy'),
  'electricity_access':('EG.ELC.ACCS.ZS','percent_population','energy'),
  'freshwater_withdrawals':('ER.H2O.FWTL.ZS','percent_internal_freshwater_resources','water'),
