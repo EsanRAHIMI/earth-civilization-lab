@@ -1,0 +1,31 @@
+name: EarthLab physical accounting verification
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/physical_core.py'
+      - 'tests/test_physical_core.py'
+      - '.github/workflows/physical-core.yml'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run all tests
+        run: python -m unittest discover -s tests -v
+      - name: Run carbon accounting 1000 years
+        run: python src/physical_core.py --years 1000
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: physical-accounting-verification-not-forecast
+          path: reports/physical_core_*
+          retention-days: 90
