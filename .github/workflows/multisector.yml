@@ -12,6 +12,7 @@ on:
       - 'src/bitcoin_cross_model.py'
       - 'src/bitcoin_data.py'
       - 'src/bitcoin_primary_calibration.py'
+      - 'src/independent_source_evidence.py'
       - 'tests/test_multisector.py'
       - '.github/workflows/multisector.yml'
 permissions:
@@ -43,6 +44,9 @@ jobs:
         run: python src/bitcoin_cross_model.py
       - name: Calibrate Bitcoin primary global covariates across all six sectors
         run: python -m src.bitcoin_primary_calibration
+      - name: Retrieve independent Global Carbon Project source inventories
+        continue-on-error: true
+        run: python src/independent_source_evidence.py
       - name: Preserve evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -57,5 +61,7 @@ jobs:
             reports/physical_validation_audit.json
             reports/bitcoin_cross_model_integration.json
             reports/bitcoin_primary_calibration.json
+            reports/independent_source_evidence.json
+            data/independent_raw/*
             data/bitcoin_*
           retention-days: 90
