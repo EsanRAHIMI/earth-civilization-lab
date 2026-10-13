@@ -28,6 +28,7 @@ on:
       - 'src/scientific_skill_gate.py'
       - 'src/physical_reservoir_identifiability.py'
       - 'src/constrained_joint_physical_fit.py'
+      - 'src/physical_parameter_inventory.py'
       - 'tests/test_multisector.py'
       - '.github/workflows/multisector.yml'
 permissions:
@@ -88,6 +89,8 @@ jobs:
         run: python -m src.physical_reservoir_identifiability
       - name: Jointly fit conservative effective carbon box exchange rates
         run: python -m src.constrained_joint_physical_fit
+      - name: Inventory all carbon and heat parameters and independent observations
+        run: python -m src.physical_parameter_inventory
       - name: Enforce operational scientific evidence readiness gate
         run: python src/operational_readiness.py
       - name: Audit whether thousand-year scientific forecast claims are justified
