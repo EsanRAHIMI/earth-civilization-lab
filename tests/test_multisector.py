@@ -1,13 +1,13 @@
 import unittest,tempfile,json,pathlib,hashlib
 from src.multisector import collect,INDICATORS
 def metadata():
- return json.dumps([{'pages':1},[{'id':f'X{i:02d}','iso2Code':'XX','region':{'id':'ECS','value':'Region'},'name':f'Country {i}','incomeLevel':{'value':'Low'}} for i in range(200)]]).encode()
+ return json.dumps([{'pages':1},[{'id':f'{chr(65+i//100)}{i%100:02d}','iso2Code':'XX','region':{'id':'ECS','value':'Region'},'name':f'Country {i}','incomeLevel':{'value':'Low'}} for i in range(200)]]).encode()
 class MultiSectorTests(unittest.TestCase):
  def test_real_format_and_missingness(self):
   def fake(url):
    if '/indicator/' not in url:return metadata()
    code=url.split('/indicator/')[1].split('?')[0]
-   return json.dumps([{'pages':1},[{'countryiso3code':'X00','date':'2020','value':1.2},{'countryiso3code':'USA','date':'2021','value':None}]]).encode()
+   return json.dumps([{'pages':1},[{'countryiso3code':'A00','date':'2020','value':1.2},{'countryiso3code':'USA','date':'2021','value':None}]]).encode()
   with tempfile.TemporaryDirectory() as d:
    m=collect(d,fake)
    self.assertEqual(m['total_observations'],len(INDICATORS))
