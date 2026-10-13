@@ -9,6 +9,7 @@ on:
       - 'src/historical_calibration.py'
       - 'src/cross_sector_relationships.py'
       - 'src/physical_validation_audit.py'
+      - 'src/bitcoin_cross_model.py'
       - 'tests/test_multisector.py'
       - '.github/workflows/multisector.yml'
 permissions:
@@ -34,6 +35,10 @@ jobs:
         run: python -m src.cross_sector_relationships
       - name: Audit thousand-year physical conservation
         run: python -m src.physical_validation_audit
+      - name: Retrieve real Bitcoin series as separate global subsystem
+        run: python src/bitcoin_data.py --timespan 1year
+      - name: Build Bitcoin links for all six sectors and physical core
+        run: python src/bitcoin_cross_model.py
       - name: Preserve evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -46,4 +51,6 @@ jobs:
             reports/historical_calibration_*
             reports/cross_sector_relationships.json
             reports/physical_validation_audit.json
+            reports/bitcoin_cross_model_integration.json
+            data/bitcoin_*
           retention-days: 90
