@@ -7,6 +7,8 @@ on:
       - 'src/multisector.py'
       - 'src/calibration_readiness.py'
       - 'src/historical_calibration.py'
+      - 'src/cross_sector_relationships.py'
+      - 'src/physical_validation_audit.py'
       - 'tests/test_multisector.py'
       - '.github/workflows/multisector.yml'
 permissions:
@@ -28,6 +30,10 @@ jobs:
         run: python src/calibration_readiness.py
       - name: Calibrate historical energy-economy-GHG association and temporal holdout
         run: python src/historical_calibration.py
+      - name: Backtest water food population and economy relationships
+        run: python -m src.cross_sector_relationships
+      - name: Audit thousand-year physical conservation
+        run: python -m src.physical_validation_audit
       - name: Preserve evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -38,4 +44,6 @@ jobs:
             reports/multisector_*
             reports/calibration_*
             reports/historical_calibration_*
+            reports/cross_sector_relationships.json
+            reports/physical_validation_audit.json
           retention-days: 90
