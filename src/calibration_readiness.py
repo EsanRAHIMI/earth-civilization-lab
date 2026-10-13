@@ -6,7 +6,7 @@ SECTORS={'climate','energy','water','food','demography','economy'}
 def assess(root):
  root=pathlib.Path(root)
  manifest=json.loads((root/'data/multisector_manifest.json').read_text())
- with (root/'data/multisector_country_coverage.csv').open() as f:rows=list(csv.DictReader(f))
+ with (root/'reports/multisector_country_coverage.csv').open() as f:rows=list(csv.DictReader(f))
  if not rows:raise ValueError('No country coverage records')
  years=manifest['retrieval_years'];expected=years[1]-years[0]+1
  if any(int(r['years_expected'])!=expected for r in rows):raise ValueError('inconsistent years')
