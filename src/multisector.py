@@ -65,12 +65,26 @@ def collect(root,fetcher=request,years=(2000,2023)):
  out=root/'data'/'multisector_observations.csv'
  with out.open('w',newline='') as f:
   w=csv.DictWriter(f,fieldnames=['country','year','indicator','sector','value','unit','source_code']);w.writeheader();w.writerows(sorted(observations,key=lambda x:(x['indicator'],x['country'],x['year'])))
- manifest={'status':'observed_only_no_imputation','source':'World Bank API v2','independent_source_validation':False,'calibrated_coupled_model':False,'retrieval_years':years,'countries':sorted(countries),'country_universe_count':len(countries),'country_universe_definition':'World Bank country metadata excluding aggregates; includes some territories and economies, not identical to UN sovereign state membership','total_observations':len(observations),'sources':sources,'quality':quality,'panel_sha256':hashlib.sha256(out.read_bytes()).hexdigest(),'limitations':['Missingness may be highly non-random','World Bank indicators may have differing revisions and definitions','Water and energy series may end before 2023','Not independent climate, energy, water or food source verification','No causal policy model or uncertainty quantification']}
+ manifest={'status':'observed_only_no_imputation','source':'World Bank API v2','independent_source_validation':False,'calibrated_coupled_model':False,'retrieval_years':years,'countries':sorted(countries),'country_universe_count':len(countries),'country_universe_definition':'World Bank country metadata excluding aggregates; includes some territories and economies, not identical to UN sovereign state membership','total_observations':len(observations),'sources':sources,'quality':quality,'panel_sha256':hashlib.sha256(out.read_bytes()).hexdigest(),'country_coverage_sha256':hashlib.sha256(coverage_index.read_bytes()).hexdigest(),'limitations':['Missingness may be highly non-random','World Bank indicators may have differing revisions and definitions','Water and energy series may end before 2023','Not independent climate, energy, water or food source verification','No causal policy model or uncertainty quantification']}
  country_index=root/'data'/'multisector_countries.csv'
  with country_index.open('w',newline='') as f:
   w=csv.DictWriter(f,fieldnames=['iso3','name','region','income_level']);w.writeheader()
   for iso,x in sorted(countries.items()):
    w.writerow({'iso3':iso,'name':x.get('name',''),'region':x.get('region',{}).get('value',''),'income_level':x.get('incomeLevel',{}).get('value','')})
+ # Explicit country x indicator coverage table, including zero-observation entities.
+ coverage_index=root/'reports'/'multisector_country_coverage.csv'
+ by_pair={}
+ for obs in observations:
+  key=(obs['country'],obs['indicator'])
+  by_pair.setdefault(key,[]).append(obs['year'])
+ with coverage_index.open('w',newline='') as f:
+  w=csv.DictWriter(f,fieldnames=['iso3','indicator','sector','years_observed','years_expected','coverage_fraction','first_year','last_year','missing_years'])
+  w.writeheader()
+  for iso in sorted(countries):
+   for name,(_,_,sector) in sorted(INDICATORS.items()):
+    ys=sorted(by_pair.get((iso,name),[]))
+    expected=set(range(years[0],years[1]+1))
+    w.writerow({'iso3':iso,'indicator':name,'sector':sector,'years_observed':len(ys),'years_expected':len(expected),'coverage_fraction':len(ys)/len(expected),'first_year':ys[0] if ys else '', 'last_year':ys[-1] if ys else '', 'missing_years':';'.join(map(str,sorted(expected-set(ys))))})
  (root/'data'/'multisector_manifest.json').write_text(json.dumps(manifest,indent=2))
  (root/'reports').mkdir(exist_ok=True)
  (root/'reports'/'multisector_coverage.json').write_text(json.dumps({'quality':quality,'total_observations':len(observations),'all_sectors_represented':set(x['sector'] for x in observations)=={'climate','energy','water','food','demography','economy'}},indent=2))
