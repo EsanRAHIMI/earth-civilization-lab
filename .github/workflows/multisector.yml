@@ -21,6 +21,11 @@ on:
       - 'src/multibox_climate.py'
       - 'src/multibox_ensemble.py'
       - 'src/nasa_temperature_hindcast.py'
+      - 'src/gcb_separate_sink_calibration.py'
+      - 'src/joint_sink_drivers.py'
+      - 'src/era5_precipitation_import.py'
+      - 'src/long_horizon_uncertainty_audit.py'
+      - 'src/scientific_skill_gate.py'
       - 'tests/test_multisector.py'
       - '.github/workflows/multisector.yml'
 permissions:
