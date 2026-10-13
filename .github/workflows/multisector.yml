@@ -10,6 +10,8 @@ on:
       - 'src/cross_sector_relationships.py'
       - 'src/physical_validation_audit.py'
       - 'src/bitcoin_cross_model.py'
+      - 'src/bitcoin_data.py'
+      - 'src/bitcoin_primary_calibration.py'
       - 'tests/test_multisector.py'
       - '.github/workflows/multisector.yml'
 permissions:
@@ -17,7 +19,7 @@ permissions:
 jobs:
   retrieve:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -36,9 +38,11 @@ jobs:
       - name: Audit thousand-year physical conservation
         run: python -m src.physical_validation_audit
       - name: Retrieve real Bitcoin series as separate global subsystem
-        run: python src/bitcoin_data.py --timespan 1year
+        run: python src/bitcoin_data.py --timespan history
       - name: Build Bitcoin links for all six sectors and physical core
         run: python src/bitcoin_cross_model.py
+      - name: Calibrate Bitcoin primary global covariates across all six sectors
+        run: python -m src.bitcoin_primary_calibration
       - name: Preserve evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -52,5 +56,6 @@ jobs:
             reports/cross_sector_relationships.json
             reports/physical_validation_audit.json
             reports/bitcoin_cross_model_integration.json
+            reports/bitcoin_primary_calibration.json
             data/bitcoin_*
           retention-days: 90
