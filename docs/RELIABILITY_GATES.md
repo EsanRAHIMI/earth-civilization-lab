@@ -1,0 +1,5 @@
+# Reliability gates — empirical vs exploratory
+The historical empirical pipeline retrieves genuine World Bank observations and preserves source snapshots and SHA256 manifests.
+The rolling-origin experiment trains separately for each target year, using only earlier-dated observations. Three simple baselines (last, mean of last 5, linear trend over last 5) are compared for 2016–2024. This is retrospective pseudo-out-of-sample validation with current-vintage data, not a true historical real-time forecast.
+No conclusion about civilization policy, causality, climate change or thousand-year survival is supported by these benchmarks.
+Do not promote any physical or societal simulation to decision-grade until: (1) real source vintage or revision sensitivity; (2) independent datasets and published source definitions; (3) historical calibration and multi-horizon external holdout; (4) uncertainty coverage and structural sensitivity; (5) physical unit conservation and plausible feedback; (6) independent scientific review. Treat this as research-grade infrastructure only.
