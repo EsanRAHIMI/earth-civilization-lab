@@ -61,7 +61,7 @@ def collect(root,fetcher=request,years=(2000,2023)):
    seen.add(key);count+=1
    observations.append({'country':iso,'year':int(yr),'indicator':name,'sector':sector,'value':value,'unit':unit,'source_code':code})
   sources.append({'indicator':name,'source_code':code,'url':url,'sha256':hashlib.sha256(body).hexdigest(),'retrieved_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'observations':count})
-  quality.append({'indicator':name,'sector':sector,'observed':count,'possible':len(countries)*(years[1]-years[0]+1),'coverage_fraction':count/(len(COUNTRIES)*(years[1]-years[0]+1)),'countries_with_data':len({x['country'] for x in observations if x['indicator']==name})})
+  quality.append({'indicator':name,'sector':sector,'observed':count,'possible':len(countries)*(years[1]-years[0]+1),'coverage_fraction':count/(len(countries)*(years[1]-years[0]+1)),'countries_with_data':len({x['country'] for x in observations if x['indicator']==name})})
  out=root/'data'/'multisector_observations.csv'
  with out.open('w',newline='') as f:
   w=csv.DictWriter(f,fieldnames=['country','year','indicator','sector','value','unit','source_code']);w.writeheader();w.writerows(sorted(observations,key=lambda x:(x['indicator'],x['country'],x['year'])))
