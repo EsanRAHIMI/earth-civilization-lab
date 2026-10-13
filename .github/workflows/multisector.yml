@@ -73,6 +73,8 @@ jobs:
         run: python -m src.long_horizon_uncertainty_audit
       - name: Quantify out-of-sample skill and disclose failed components
         run: python -m src.scientific_skill_gate
+      - name: Import ERA5-derived annual global precipitation with provenance
+        run: python -m src.era5_precipitation_import
       - name: Fit temperature precipitation and land-use sink drivers when data available
         run: python -m src.joint_sink_drivers
       - name: Enforce operational scientific evidence readiness gate
