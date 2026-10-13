@@ -1,7 +1,7 @@
 """Observed multi-sector World Bank data, with explicit missingness and no imputation.
 Independent-source validation and causal calibration are NOT performed here.
 """
-import argparse,csv,datetime,hashlib,json,math,pathlib,urllib.request,collections
+import argparse,csv,datetime,hashlib,json,math,pathlib,urllib.request,urllib.error,collections,time,random,socket
 COUNTRIES=['USA','CHN','IND','BRA','ZAF','DEU','JPN','NGA','IDN','ARE']
 INDICATORS={
  'climate_ghg_per_capita':('EN.GHG.CO2.PC.CE.AR5','tCO2e_per_person','climate'),
@@ -16,7 +16,17 @@ INDICATORS={
  'gdp_growth':('NY.GDP.MKTP.KD.ZG','percent_per_year','economy'),
 }
 def request(url):
- with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'EarthCivilizationLab/1.0 evidence research'}),timeout=40) as r:return r.read()
+ # Retry transient World Bank API throttling, server errors and socket read timeouts.
+ # Permanent 4xx errors are surfaced immediately; no fabricated fallback.
+ for attempt in range(5):
+  try:
+   with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'EarthCivilizationLab/1.0 evidence research','Accept':'application/json'}),timeout=60) as r:return r.read()
+  except urllib.error.HTTPError as e:
+   if e.code not in (408,429,500,502,503,504) or attempt==4:raise
+  except (TimeoutError,socket.timeout,urllib.error.URLError,ConnectionError):
+   if attempt==4:raise
+  time.sleep(min(2**attempt,12)+random.uniform(0,0.5))
+ raise RuntimeError('unreachable')
 def collect(root,fetcher=request,years=(2000,2023)):
  root=pathlib.Path(root);raw=root/'data'/'multisector_raw';raw.mkdir(parents=True,exist_ok=True)
  observations=[];sources=[];quality=[]
