@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'src/multisector.py'
+      - 'src/calibration_readiness.py'
       - 'tests/test_multisector.py'
       - '.github/workflows/multisector.yml'
 permissions:
@@ -22,6 +23,8 @@ jobs:
         run: python -m unittest discover -s tests -v
       - name: Acquire ten observed indicators across six sectors
         run: python src/multisector.py
+      - name: Assess calibration readiness from actual coverage
+        run: python src/calibration_readiness.py
       - name: Preserve evidence
         if: always()
         uses: actions/upload-artifact@v4
