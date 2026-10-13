@@ -65,6 +65,10 @@ jobs:
         run: python -m src.nasa_temperature_hindcast
       - name: Run millennial multi-reservoir carbon and temperature sensitivity ensemble
         run: python -m src.multibox_ensemble
+      - name: Fit separate ocean and land net sink responses to GCB flux estimates
+        run: python -m src.gcb_separate_sink_calibration
+      - name: Audit reservoir identifiability and millennial uncertainty
+        run: python -m src.reservoir_calibration_audit
       - name: Enforce operational scientific evidence readiness gate
         run: python src/operational_readiness.py
       - name: Audit whether thousand-year scientific forecast claims are justified
