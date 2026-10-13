@@ -1,7 +1,7 @@
 """Auditable real Bitcoin network time series from Blockchain.com charts API.
 No price forecasting, no synthetic data, no inference of electricity use from hashrate.
 """
-import argparse,csv,datetime,hashlib,json,math,pathlib,time,urllib.request,urllib.error,socket
+import argparse,csv,datetime,hashlib,json,math,pathlib,time,urllib.request,urllib.error,socket,collections
 CHARTS={
  'market_price_usd':('market-price','USD_per_BTC'),
  'network_hashrate':('hash-rate','TH_per_second'),
@@ -31,15 +31,27 @@ def parse_chart(body,name,unit):
  if not rows:raise ValueError('empty chart '+name)
  return sorted(rows,key=lambda r:r['unix_timestamp'])
 def collect(root,fetcher=request,timespan='1year'):
- if timespan not in ('30days','1year','2years','3years'):raise ValueError('unsupported timespan')
+ if timespan not in ('30days','1year','2years','3years','history'):raise ValueError('unsupported timespan')
  root=pathlib.Path(root);raw=root/'data'/'bitcoin_raw';raw.mkdir(parents=True,exist_ok=True)
  records=[];sources=[]
  for name,(chart,unit) in CHARTS.items():
-  url=f'{BASE}{chart}?timespan={timespan}&format=json'
-  body=fetcher(url);rows=parse_chart(body,name,unit)
-  (raw/(name+'.json')).write_bytes(body)
+  chunks=range(2009,2027,3) if timespan=='history' else [None]
+  merged={}
+  chunk_sources=[]
+  for start_year in chunks:
+   url=(f'{BASE}{chart}?start={start_year}-01-01&timespan=3years&format=json&sampled=false' if start_year is not None else f'{BASE}{chart}?timespan={timespan}&format=json')
+   body=fetcher(url);part=parse_chart(body,name,unit)
+   (raw/(name+('_'+str(start_year) if start_year is not None else '')+'.json')).write_bytes(body)
+   for item in part:
+    ts=item['unix_timestamp']
+    if ts in merged and merged[ts]['value']!=item['value']:raise ValueError('conflicting overlap '+name)
+    merged[ts]=item
+   chunk_sources.append({'url':url,'sha256':hashlib.sha256(body).hexdigest(),'points':len(part)})
+  rows=sorted(merged.values(),key=lambda r:r['unix_timestamp'])
+  if timespan=='history' and (datetime.datetime.fromtimestamp(rows[0]['unix_timestamp'],datetime.timezone.utc).year>2013 or datetime.datetime.fromtimestamp(rows[-1]['unix_timestamp'],datetime.timezone.utc).year<2025):
+   raise ValueError('Insufficient long-term Bitcoin history for '+name)
   records.extend(rows)
-  sources.append({'indicator':name,'url':url,'sha256':hashlib.sha256(body).hexdigest(),'observations':len(rows),'first_timestamp':rows[0]['timestamp_utc'],'last_timestamp':rows[-1]['timestamp_utc'],'retrieved_utc':datetime.datetime.now(datetime.timezone.utc).isoformat()})
+  sources.append({'indicator':name,'chunks':chunk_sources,'observations':len(rows),'first_timestamp':rows[0]['timestamp_utc'],'last_timestamp':rows[-1]['timestamp_utc'],'retrieved_utc':datetime.datetime.now(datetime.timezone.utc).isoformat()})
  out=root/'data'/'bitcoin_observations.csv'
  with out.open('w',newline='') as f:
   w=csv.DictWriter(f,fieldnames=['timestamp_utc','unix_timestamp','indicator','value','unit']);w.writeheader();w.writerows(sorted(records,key=lambda x:(x['indicator'],x['unix_timestamp'])))
