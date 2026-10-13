@@ -20,6 +20,7 @@ on:
       - 'src/noaa_gcp_carbon_hindcast.py'
       - 'src/multibox_climate.py'
       - 'src/multibox_ensemble.py'
+      - 'src/nasa_temperature_hindcast.py'
       - 'tests/test_multisector.py'
       - '.github/workflows/multisector.yml'
 permissions:
@@ -60,6 +61,8 @@ jobs:
         run: python -m src.gcp_independent_target_calibration
       - name: Fit physical atmospheric carbon response and test NOAA historical observations
         run: python src/noaa_gcp_carbon_hindcast.py
+      - name: Calibrate two-layer temperature response and evaluate NASA historical holdout
+        run: python -m src.nasa_temperature_hindcast
       - name: Run millennial multi-reservoir carbon and temperature sensitivity ensemble
         run: python -m src.multibox_ensemble
       - name: Enforce operational scientific evidence readiness gate
@@ -85,6 +88,8 @@ jobs:
             reports/gcp_independent_target_calibration.json
             reports/operational_readiness.json
             reports/millennium_claim_audit.json
+            reports/nasa_temperature_hindcast.json
+            data/independent_raw/nasa_gistemp_global.csv
             reports/multibox_ensemble.json
             reports/noaa_gcp_carbon_hindcast.json
             reports/noaa_gcp_carbon_hindcast_rows.csv
