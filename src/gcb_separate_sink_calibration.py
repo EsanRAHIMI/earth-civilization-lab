@@ -10,7 +10,7 @@ def get(url):
 def load(kind,root):
  url=BASE+kind
  page=get(url).decode('utf-8')
- links=re.findall(r'href=["\\\']([^"\\\']+\\.csv(?:\\?[^"\\\']*)?)["\\\']',page)
+ links=re.findall('href="([^"]+csv[^"]*)"',page)
  matches=[html.unescape(x) for x in links if 'global-carbon-budget-2025-'+kind+'-gcb.csv' in x]
  if len(matches)!=1:raise ValueError('Cannot unambiguously find GCB '+kind+' CSV: '+repr(matches))
  from urllib.parse import urljoin
