@@ -13,6 +13,7 @@ on:
       - 'src/bitcoin_data.py'
       - 'src/bitcoin_primary_calibration.py'
       - 'src/independent_source_evidence.py'
+      - 'src/independent_population_consistency.py'
       - 'tests/test_multisector.py'
       - '.github/workflows/multisector.yml'
 permissions:
@@ -47,6 +48,9 @@ jobs:
       - name: Retrieve independent Global Carbon Project source inventories
         continue-on-error: true
         run: python src/independent_source_evidence.py
+      - name: Calculate independent cross-source demographic consistency
+        continue-on-error: true
+        run: python src/independent_population_consistency.py
       - name: Preserve evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -62,6 +66,7 @@ jobs:
             reports/bitcoin_cross_model_integration.json
             reports/bitcoin_primary_calibration.json
             reports/independent_source_evidence.json
+            reports/independent_population_consistency.json
             data/independent_raw/*
             data/bitcoin_*
           retention-days: 90
