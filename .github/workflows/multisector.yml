@@ -34,6 +34,7 @@ on:
       - 'src/joint_physical_fit_skill_gate.py'
       - 'src/independent_carbon_stock_sources.py'
       - 'src/independent_carbon_stock_import.py'
+      - 'src/strict_physical_calibration_gate.py'
       - 'tests/test_multisector.py'
       - '.github/workflows/multisector.yml'
 permissions:
@@ -127,6 +128,8 @@ jobs:
             reports/independent_source_evidence.json
             reports/independent_population_consistency.json
             reports/gcp_independent_target_calibration.json
+            reports/joint_physical_fit_skill_gate.json
+            reports/independent_carbon_stock_import.json
             reports/operational_readiness.json
             reports/millennium_claim_audit.json
             reports/nasa_temperature_hindcast.json
@@ -138,3 +141,20 @@ jobs:
             data/independent_raw/*
             data/bitcoin_*
           retention-days: 90
+
+  physical_calibration_acceptance:
+    name: Strict physical calibration acceptance
+    needs: retrieve
+    if: always() && needs.retrieve.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@v4
+        with:
+          name: multisector-worldbank-observations-and-coverage
+          path: .
+      - name: Require measured stocks and out-of-sample physical skill
+        run: python -m src.strict_physical_calibration_gate
