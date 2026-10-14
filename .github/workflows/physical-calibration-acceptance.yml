@@ -1,6 +1,5 @@
 name: EarthLab strict physical calibration acceptance
 on:
-  workflow_dispatch:
   workflow_run:
     workflows: ["EarthLab observed multi-sector evidence"]
     types: [completed]
@@ -9,7 +8,7 @@ permissions:
   contents: read
 jobs:
   strict_science:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    if: github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,7 +20,7 @@ jobs:
         with:
           name: multisector-worldbank-observations-and-coverage
           path: .
-          run-id: ${{ github.event.workflow_run.id || github.run_id }}
+          run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - name: Require observed stocks and independent historical skill
         run: python -m src.strict_physical_calibration_gate
