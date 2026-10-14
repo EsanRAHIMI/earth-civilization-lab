@@ -35,6 +35,8 @@ on:
       - 'src/independent_carbon_stock_sources.py'
       - 'src/independent_carbon_stock_import.py'
       - 'src/strict_physical_calibration_gate.py'
+      - 'src/six_sector_evidence_scorecard.py'
+      - 'src/all_sector_persistence_baselines.py'
       - 'tests/test_multisector.py'
       - '.github/workflows/multisector.yml'
 permissions:
@@ -58,6 +60,10 @@ jobs:
         run: python src/historical_calibration.py
       - name: Backtest water food population and economy relationships
         run: python -m src.cross_sector_relationships
+      - name: Establish holdout baselines for all six sectors and ten indicators
+        run: python -m src.all_sector_persistence_baselines
+      - name: Audit integrated six-sector evidence and predictive skill
+        run: python -m src.six_sector_evidence_scorecard
       - name: Audit thousand-year physical conservation
         run: python -m src.physical_validation_audit
       - name: Retrieve real Bitcoin series as separate global subsystem
@@ -122,6 +128,8 @@ jobs:
             reports/calibration_*
             reports/historical_calibration_*
             reports/cross_sector_relationships.json
+            reports/all_sector_persistence_baselines.json
+            reports/six_sector_evidence_scorecard.json
             reports/physical_validation_audit.json
             reports/bitcoin_cross_model_integration.json
             reports/bitcoin_primary_calibration.json
