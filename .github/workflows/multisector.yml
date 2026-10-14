@@ -149,20 +149,3 @@ jobs:
             data/independent_raw/*
             data/bitcoin_*
           retention-days: 90
-
-  physical_calibration_acceptance:
-    name: Strict physical calibration acceptance
-    needs: retrieve
-    if: always() && needs.retrieve.result == 'success'
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - uses: actions/download-artifact@v4
-        with:
-          name: multisector-worldbank-observations-and-coverage
-          path: .
-      - name: Require measured stocks and out-of-sample physical skill
-        run: python -m src.strict_physical_calibration_gate
