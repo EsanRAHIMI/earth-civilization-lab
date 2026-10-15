@@ -24,8 +24,25 @@ def get(url,attempts=5,timeout=35):
  raise RuntimeError('NOAA download exhausted retries')
 def run(root='.'):
  root=pathlib.Path(root);observed={};sources={}
+ reference=root/'data/reference/noaa_world_ocean_heat_2005_2025.csv'
+ used_reference=False
  for layer,name in FILES.items():
-  url=BASE+name;raw=get(url);data={}
+  url=BASE+name;data={}
+  try:raw=get(url)
+  except (urllib.error.URLError,TimeoutError,socket.timeout,ConnectionError) as e:
+   if not reference.exists():raise
+   used_reference=True
+   with reference.open(newline='') as f:
+    for row in csv.DictReader(f):
+     y=int(row['year'])
+     v=float(row['heat_'+layer+'_zj']);se=float(row['heat_'+layer+'_se_zj'])
+     if not (math.isfinite(v) and math.isfinite(se) and se>=0):raise ValueError('Invalid NOAA reference value')
+     if y in data:raise ValueError('Duplicate NOAA reference year')
+     data[y]=(v,se)
+   if len(data)!=21 or min(data)!=2005 or max(data)!=2025:raise ValueError('Incomplete NOAA reference')
+   observed[layer]=data
+   sources[layer]={'url':url,'source_type':'NOAA NCEI observed annual published values, repository reference snapshot','snapshot_sha256':hashlib.sha256(reference.read_bytes()).hexdigest(),'first_year':min(data),'last_year':max(data),'n':len(data),'live_download_error':str(e)[:240]}
+   continue
   for line in raw.decode('utf-8-sig').splitlines()[1:]:
    parts=line.split()
    if len(parts)<3:continue
@@ -43,6 +60,6 @@ def run(root='.'):
   for y in years:
    a,ase=observed['0_700m'][y];b,bse=observed['0_2000m'][y]
    writer.writerow([y,a,ase,b,bse,b-a])
- report={'status':'noaa_observed_ocean_heat_content_imported','output':str(path),'years':len(years),'first_year':min(years),'last_year':max(years),'sources':sources,'quantity':'heat-content anomaly','units':'zettajoules','spatial':'World Ocean','overlap_note':'700-2000m anomaly computed as difference; uncertainty of difference cannot be calculated assuming independence','cannot_constrain':'below 2000m ocean heat or ocean carbon stocks'}
+ report={'status':'noaa_observed_ocean_heat_content_imported','used_repository_noaa_reference':used_reference,'output':str(path),'years':len(years),'first_year':min(years),'last_year':max(years),'sources':sources,'quantity':'heat-content anomaly','units':'zettajoules','spatial':'World Ocean','overlap_note':'700-2000m anomaly computed as difference; uncertainty of difference cannot be calculated assuming independence','cannot_constrain':'below 2000m ocean heat or ocean carbon stocks'}
  folder=root/'reports';folder.mkdir(exist_ok=True);(folder/'ocean_heat_content_provenance.json').write_text(json.dumps(report,indent=2));print(json.dumps(report,indent=2));return report
 if __name__=='__main__':run()
