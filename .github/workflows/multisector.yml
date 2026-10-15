@@ -37,6 +37,7 @@ on:
       - 'src/strict_physical_calibration_gate.py'
       - 'src/six_sector_evidence_scorecard.py'
       - 'src/all_sector_persistence_baselines.py'
+      - 'src/terrestrial_sink_nested_validation.py'
       - 'tests/test_multisector.py'
       - '.github/workflows/multisector.yml'
 permissions:
@@ -97,6 +98,8 @@ jobs:
         run: python -m src.era5_precipitation_import
       - name: Fit temperature precipitation and land-use sink drivers when data available
         run: python -m src.joint_sink_drivers
+      - name: Evaluate terrestrial sink with train-only model selection and untouched holdout
+        run: python -m src.terrestrial_sink_nested_validation
       - name: Import NOAA observed global ocean heat content
         run: python -m src.noaa_ocean_heat_import
       - name: Assemble aligned observed carbon flux and ocean heat data
@@ -136,6 +139,7 @@ jobs:
             reports/independent_source_evidence.json
             reports/independent_population_consistency.json
             reports/gcp_independent_target_calibration.json
+            reports/terrestrial_sink_nested_validation.json
             reports/joint_physical_fit_skill_gate.json
             reports/independent_carbon_stock_import.json
             reports/operational_readiness.json
