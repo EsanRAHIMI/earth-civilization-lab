@@ -39,6 +39,8 @@ on:
       - 'src/all_sector_persistence_baselines.py'
       - 'src/terrestrial_sink_nested_validation.py'
       - 'tests/test_multisector.py'
+      - 'tests/test_noaa_ocean_heat_fallback.py'
+      - 'data/reference/noaa_world_ocean_heat_2005_2025.csv'
       - '.github/workflows/multisector.yml'
 permissions:
   contents: read
