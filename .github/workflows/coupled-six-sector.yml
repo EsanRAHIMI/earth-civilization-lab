@@ -1,0 +1,27 @@
+name: EarthLab coupled six-sector research checks
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/coupled_six_sector_research.py'
+      - 'tests/test_coupled_six_sector_research.py'
+      - '.github/workflows/coupled-six-sector.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run six-sector tests
+        run: python -m unittest discover -s tests -p 'test_coupled_six_sector_research.py' -v
+      - name: Generate exploratory model report
+        run: python -m src.coupled_six_sector_research
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coupled-six-sector-research
+          path: reports/coupled_six_sector_research.json
