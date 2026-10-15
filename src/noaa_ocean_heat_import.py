@@ -35,7 +35,7 @@ def run(root='.'):
    with reference.open(newline='') as f:
     for row in csv.DictReader(f):
      y=int(row['year'])
-     v=float(row['heat_'+layer+'_zj']);se=float(row['heat_'+layer+'_se_zj'])
+     v=float(row['heat_'+layer.removesuffix('m')+'_zj']);se=float(row['heat_'+layer.removesuffix('m')+'_se_zj'])
      if not (math.isfinite(v) and math.isfinite(se) and se>=0):raise ValueError('Invalid NOAA reference value')
      if y in data:raise ValueError('Duplicate NOAA reference year')
      data[y]=(v,se)
