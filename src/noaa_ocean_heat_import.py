@@ -4,12 +4,24 @@ Source units 10^22 J, output zettajoules (1 ZJ = 10^21 J).
 0-700m and 0-2000m are overlapping depth integrals, NOT two independent
 layers; 700-2000m is their difference, with correlated uncertainty.
 """
-import csv,hashlib,json,math,pathlib,urllib.request
+import csv,hashlib,json,math,pathlib,urllib.request,urllib.error,time,random,socket
 BASE='https://www.ncei.noaa.gov/data/oceans/woa/DATA_ANALYSIS/3M_HEAT_CONTENT/DATA/basin/yearly/'
 FILES={'0_700m':'h22-w0-700m.dat','0_2000m':'h22-w0-2000m.dat'}
-def get(url):
- req=urllib.request.Request(url,headers={'User-Agent':'EarthCivilizationLab/1.0'})
- with urllib.request.urlopen(req,timeout=90) as f:return f.read()
+def get(url,attempts=5,timeout=35):
+ # Retry transient network/server failures; never fabricate observations.
+ req=urllib.request.Request(url,headers={'User-Agent':'EarthCivilizationLab/1.0','Accept':'text/plain'})
+ for attempt in range(attempts):
+  try:
+   with urllib.request.urlopen(req,timeout=timeout) as f:
+    raw=f.read()
+    if len(raw)<200:raise ValueError('Suspiciously short NOAA response')
+    return raw
+  except urllib.error.HTTPError as e:
+   if e.code not in (408,429,500,502,503,504) or attempt==attempts-1:raise
+  except (urllib.error.URLError,TimeoutError,socket.timeout,ConnectionError):
+   if attempt==attempts-1:raise
+  time.sleep(min(2**attempt,12)+random.uniform(0,0.5))
+ raise RuntimeError('NOAA download exhausted retries')
 def run(root='.'):
  root=pathlib.Path(root);observed={};sources={}
  for layer,name in FILES.items():
