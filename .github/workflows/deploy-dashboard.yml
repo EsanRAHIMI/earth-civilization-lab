@@ -45,6 +45,30 @@ jobs:
           cp .earthlab-artifacts/reports/sector_lagged_research.json web/model/lagged-research.json
           cp .earthlab-artifacts/reports/scientific_release_gate.json web/model/scientific-gate.json
           cp .earthlab-artifacts/reports/six_sector_robustness.json web/model/robustness.json
+      - name: Resolve latest independently successful spatial data evidence
+        id: spatial
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          RUN_ID=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/spatial-water-food.yml/runs?status=success&per_page=1" --jq '.workflow_runs[0].id // empty')
+          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
+      - name: Download independently generated spatial observation reports
+        if: steps.spatial.outputs.run_id != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: actual-spatial-rainfall-provenance
+          run-id: ${{ steps.spatial.outputs.run_id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: .spatial-research
+      - name: Publish spatial research as distinct and non-forecast observation evidence
+        if: steps.spatial.outputs.run_id != ''
+        run: |
+          test -s .spatial-research/reports/gpcp_spatial_precipitation.json
+          test -s .spatial-research/reports/faostat_wheat_country_observations.json
+          test -s .spatial-research/reports/country_aligned_wheat_rain_benchmark.json
+          cp .spatial-research/reports/gpcp_spatial_precipitation.json web/model/gpcp-rainfall.json
+          cp .spatial-research/reports/faostat_wheat_country_observations.json web/model/faostat-wheat.json
+          cp .spatial-research/reports/country_aligned_wheat_rain_benchmark.json web/model/wheat-rain-research.json
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Verify dashboard
