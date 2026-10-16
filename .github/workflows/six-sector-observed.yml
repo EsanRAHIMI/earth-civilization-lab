@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'src/six_sector_observed_hindcast.py'
+      - 'src/six_sector_robustness.py'
       - 'src/six_sector_conformal_coverage.py'
       - 'src/observed_grid_pipeline.py'
       - 'tests/test_six_sector_observed.py'
@@ -25,6 +26,8 @@ jobs:
         run: python -m src.multisector
       - name: Observed country-disjoint hindcast
         run: python -m src.six_sector_observed_hindcast
+      - name: Multi-split climate water food robustness
+        run: python -m src.six_sector_robustness
       - name: Country-disjoint uncertainty coverage
         run: python -m src.six_sector_conformal_coverage
       - name: Unit tests
@@ -41,5 +44,6 @@ jobs:
           name: observed-six-sector-validation
           path: |
             reports/six_sector_observed_holdout.json
+            reports/six_sector_robustness.json
             reports/six_sector_conformal_coverage.json
           if-no-files-found: warn
