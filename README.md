@@ -42,6 +42,14 @@ A separate unit/integration test **changes observed NOAA heat labels from 2015 o
 
 [Model source](src/climate_joint_temperature_ocean.py) · [No-leakage integration test](tests/test_climate_joint_observed_holdout_leakage.py) · [Run and raw evidence artifact](https://github.com/EsanRAHIMI/earth-civilization-lab/actions/runs/38910826522)
 
+## First gridded water/crop observational benchmark (2026-10-16)
+
+A new [spatial water-and-food CI](https://github.com/EsanRAHIMI/earth-civilization-lab/actions/runs/38950921593) actually ingests official NOAA GPCP satellite/gauge precipitation NetCDF (2005–2023), preserves full source SHA and units, extracts official FAOSTAT wheat crop-specific yield/harvested area/production (with quality flags) and overlays Natural Earth country polygons using geodesic clipping of each 2.5° pixel. This yields complete national-coverage rain/yield observational pairs for India, Pakistan and the USA, not arbitrary rectangle averages.
+
+The **independent-time 2019–2023 exploratory holdout** selected persistence and produced exactly **0.12922 t/ha MAE**, equal to the same-sample persistence baseline. A national annual precipitation covariate **did not demonstrate better crop-yield prediction**. This does not establish crop-field spatial validation or a preseason forecast. GRACE water storage, watershed outlet discharge and crop-specific cropland masks remain missing.
+
+[Complete source provenance, results and acceptance criteria](docs/SPATIAL_WATER_CROP_2026_EVIDENCE.md).
+
 ## Documentation
 
 - [Scientific architecture, international methods and acceptance criteria](docs/EARTHLAB_RESEARCH_ARCHITECTURE_2026.md)
