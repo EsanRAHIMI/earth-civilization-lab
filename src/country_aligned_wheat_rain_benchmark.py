@@ -26,7 +26,17 @@ def fetch_geometry(fetcher=None):
   if code in COUNTRY_ISO.values():
    if code in countries:raise ValueError("Repeated sovereign polygon")
    geom=shape(feature["geometry"])
-   if geom.is_empty or not geom.is_valid:raise ValueError("Invalid Natural Earth polygon")
+   if geom.is_empty:raise ValueError("Empty Natural Earth polygon")
+   if not geom.is_valid:
+    from shapely import make_valid
+    from shapely.ops import unary_union
+    fixed=make_valid(geom)
+    parts=[g for g in getattr(fixed,"geoms",[fixed]) if g.geom_type in ("Polygon","MultiPolygon")]
+    if not parts:raise ValueError("No polygon after geometry repair: "+code)
+    corrected=unary_union(parts)
+    if not corrected.is_valid or abs(corrected.area-geom.area)/max(geom.area,1e-12)>.005:
+     raise ValueError("Natural Earth repair changes country area >0.5%: "+code)
+    geom=corrected
    countries[code]=geom
  if set(countries)!=set(COUNTRY_ISO.values()):
   raise ValueError("Incomplete country polygon source")
@@ -162,7 +172,7 @@ def run(root="."):
                      "country_polygon_geodesic_weight_area_km2":sum(w for _,_,w in weights)/1e6}
  result=benchmark(observation)
  report={"status":"national_paired_geographic_rainfall_and_crop_hindcast_exploratory",
-   "country_geometry":"Natural Earth 110m admin0 country polygons",
+   "country_geometry":"Natural Earth 110m admin0 polygons; repairs limited to <=0.5% planar area change",
    "pixel_intersection":"Shapely polygon clipping + WGS84 geodesic area, 2.5deg GPCP precipitation",
    "geometry_source_url":GEOMETRY_SOURCE,
    "geometry_sha256":hashlib.sha256(geojson).hexdigest(),
