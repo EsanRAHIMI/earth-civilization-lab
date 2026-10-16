@@ -5,7 +5,7 @@ polygons. This yields a genuine precipitation observation layer, never a
 GRACE water-storage validation or a calibrated basin water balance.
 NO extrapolation, invented months, or training/holdout contamination.
 """
-import calendar,csv,datetime,hashlib,json,math,pathlib,urllib.request
+import calendar,csv,datetime,hashlib,json,math,pathlib,urllib.request,urllib.error,http.client,time
 SOURCE="https://psl.noaa.gov/thredds/fileServer/Datasets/gpcp/precip.mon.mean.nc"
 REGIONS={
  "north_india_bbox":{"lat":[24.,32.],"lon":[73.,84.]},
@@ -69,10 +69,19 @@ def run(root="."):
  output=root/"data/independent_raw"
  output.mkdir(parents=True,exist_ok=True)
  path=output/"noaa_gpcp_v23_monthly.nc"
- request=urllib.request.Request(SOURCE,headers={"User-Agent":"EarthCivilizationLab scientific-data-review"})
- with urllib.request.urlopen(request,timeout=120) as response:
-  payload=response.read()
- if len(payload)<1000000:raise ValueError("GPCP response suspiciously short")
+ payload=None
+ for attempt in range(5):
+  try:
+   request=urllib.request.Request(SOURCE,headers={"User-Agent":"EarthCivilizationLab scientific-data-review"})
+   with urllib.request.urlopen(request,timeout=120) as response:
+    candidate=response.read()
+   if len(candidate)<1000000:raise ValueError("GPCP response suspiciously short")
+   payload=candidate
+   break
+  except (http.client.IncompleteRead,urllib.error.URLError,TimeoutError,ConnectionError):
+   if attempt==4:raise
+   time.sleep(min(2**attempt,8))
+ if payload is None:raise RuntimeError("NOAA source response unavailable")
  path.write_bytes(payload)
  with netCDF4.Dataset(path) as nc:
   observed={name:decode_region(nc,box,*PERIOD) for name,box in REGIONS.items()}
