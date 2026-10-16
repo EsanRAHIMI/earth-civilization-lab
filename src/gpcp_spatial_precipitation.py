@@ -69,19 +69,38 @@ def run(root="."):
  output=root/"data/independent_raw"
  output.mkdir(parents=True,exist_ok=True)
  path=output/"noaa_gpcp_v23_monthly.nc"
- payload=None
- for attempt in range(5):
-  try:
-   request=urllib.request.Request(SOURCE,headers={"User-Agent":"EarthCivilizationLab scientific-data-review"})
-   with urllib.request.urlopen(request,timeout=120) as response:
-    candidate=response.read()
-   if len(candidate)<1000000:raise ValueError("GPCP response suspiciously short")
-   payload=candidate
-   break
-  except (http.client.IncompleteRead,urllib.error.URLError,TimeoutError,ConnectionError):
-   if attempt==4:raise
-   time.sleep(min(2**attempt,8))
- if payload is None:raise RuntimeError("NOAA source response unavailable")
+ # NOAA THREDDS large HTTP transfers are occasionally truncated by the server.
+ # Download independently verified HTTP 206 byte ranges, never a partial file.
+ head=urllib.request.Request(SOURCE,method="HEAD",headers={"User-Agent":"EarthCivilizationLab scientific-data-review"})
+ with urllib.request.urlopen(head,timeout=60) as info:
+  total=int(info.headers.get("Content-Length","0"))
+ if not(1000000<total<200000000):raise ValueError("Invalid NOAA source length")
+ block=2*1024*1024
+ buffers=[]
+ for begin in range(0,total,block):
+  finish=min(begin+block,total)-1
+  part=None
+  for attempt in range(5):
+   try:
+    request=urllib.request.Request(SOURCE,headers={
+     "Range":f"bytes={begin}-{finish}",
+     "User-Agent":"EarthCivilizationLab scientific-data-review"})
+    with urllib.request.urlopen(request,timeout=90) as response:
+     status=response.status
+     content_range=response.headers.get("Content-Range","")
+     fragment=response.read()
+    if status!=206 or not content_range.startswith(f"bytes {begin}-{finish}/{total}"):
+     raise ValueError("NOAA server refused precise HTTP range")
+    if len(fragment)!=finish-begin+1:raise IOError("Truncated NOAA range")
+    part=fragment
+    break
+   except (http.client.IncompleteRead,urllib.error.URLError,TimeoutError,ConnectionError,IOError):
+    if attempt==4:raise
+    time.sleep(min(2**attempt,8))
+  if part is None:raise RuntimeError("NOAA range unavailable")
+  buffers.append(part)
+ payload=b"".join(buffers)
+ if len(payload)!=total:raise ValueError("NOAA byte-range source length mismatch")
  path.write_bytes(payload)
  with netCDF4.Dataset(path) as nc:
   observed={name:decode_region(nc,box,*PERIOD) for name,box in REGIONS.items()}
