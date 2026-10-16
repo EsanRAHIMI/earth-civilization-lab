@@ -1,4 +1,5 @@
 name: Six-sector observed validation
+# Report artifacts are consumed by the Pages deployment workflow.
 on:
   push:
     branches: [main]
