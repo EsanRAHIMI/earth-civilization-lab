@@ -77,6 +77,26 @@ def evaluate(rows,predict):
    baseline.append(2*abs(persist-actual)/(abs(persist)+abs(actual)))
   out[sector]={"n":len(rows),"model_smape_percent":100*statistics.mean(errors),"persistence_smape_percent":100*statistics.mean(baseline),"beats_persistence":statistics.mean(errors)<statistics.mean(baseline)}
  return out
+def country_block_uncertainty(rows,predict,sector_index,replicates=1000):
+ """Paired country-block bootstrap of sMAPE improvement; diagnostic only."""
+ grouped=collections.defaultdict(list)
+ for country,year,x,y in rows:
+  actual=math.exp(y[sector_index])
+  forecast=math.exp(max(-50,min(50,predict(x)[sector_index])))
+  previous=math.exp(x[sector_index])
+  err=lambda v:200*abs(v-actual)/(abs(v)+abs(actual))
+  grouped[country].append(err(previous)-err(forecast))
+ names=sorted(grouped)
+ if len(names)<3:return {"country_count":len(names),"ci95":None,"bootstrap_probability_positive":None}
+ rng=random.Random(20261016+sector_index)
+ draws=[]
+ for _ in range(replicates):
+  sampled=[rng.choice(names) for _ in names]
+  values=[v for country in sampled for v in grouped[country]]
+  draws.append(statistics.mean(values))
+ draws.sort()
+ return {"country_count":len(names),"ci95":[round(draws[int(.025*(replicates-1))],4),round(draws[int(.975*(replicates-1))],4)],"bootstrap_probability_positive":round(sum(v>0 for v in draws)/replicates,4),"method":"paired country-block percentile bootstrap; exploratory"}
+
 def run(root="."):
  root=pathlib.Path(root);panel=read_panel(root/"data/multisector_observations.csv");rows=samples(panel)
  countries=sorted({r[0] for r in rows})
@@ -114,11 +134,13 @@ def run(root="."):
   chosen["selected_smape_percent"]=chosen["model_smape_percent"]
   chosen["selected_beats_persistence"]=chosen["model_smape_percent"]<baseline["model_smape_percent"]-1e-9
   chosen["beats_persistence"]=chosen["selected_beats_persistence"]
+  chosen["improvement_uncertainty"]=country_block_uncertainty(holdout,models[selected[sector]],list(TARGETS).index(sector))
+  chosen["statistically_supported_improvement"]=bool(chosen["selected_beats_persistence"] and chosen["improvement_uncertainty"]["ci95"] and chosen["improvement_uncertainty"]["ci95"][0]>0)
   metrics[sector]=chosen
  penalty=None
  validation_metrics=validation_scores
  choices=[(key,statistics.mean(v[s]["model_smape_percent"] for s in TARGETS)) for key,v in validation_scores.items()]
 
- report={"status":"country_disjoint_historical_holdout_evaluated","data_source":"World Bank country indicator observations","indicator_mapping":TARGETS,"sample_policy":"Six strictly positive observed indicators in both consecutive years; no imputation","train_pairs":len(train),"validation_pairs":len(validation),"holdout_pairs":len(holdout),"holdout_countries":sorted(hold_c),"train_countries":len(set(r[0] for r in train)),"validation_selection_penalty":penalty,"validation_selected_predictors":selected,"validation_model_vs_persistence":validation_metrics,"validation_scores":choices,"holdout_years":"2019-2023","metrics":metrics,"all_sectors_beat_persistence":all(v["beats_persistence"] for v in metrics.values()),"selected_predictors_all_beat_persistence":all(v["selected_beats_persistence"] for v in metrics.values()),"selected_predictors_have_no_verified_skill_when_tied":True,"independent_provider_validation":False,"causal":False,"physical_units_conserved":False,"warnings":["Country-disjoint temporal holdout, but all outcomes share World Bank source","Complete-case selection biases toward well-reported countries","Using observed prior-year indicators means this is a one-step hindcast, not a free-running forecast","Regression coefficients are predictive associations, not physical interactions","Uncertainty calibration and geospatial rasters require separate evaluation"]}
+ report={"status":"country_disjoint_historical_holdout_evaluated","data_source":"World Bank country indicator observations","indicator_mapping":TARGETS,"sample_policy":"Six strictly positive observed indicators in both consecutive years; no imputation","train_pairs":len(train),"validation_pairs":len(validation),"holdout_pairs":len(holdout),"holdout_countries":sorted(hold_c),"train_countries":len(set(r[0] for r in train)),"validation_selection_penalty":penalty,"validation_selected_predictors":selected,"validation_model_vs_persistence":validation_metrics,"validation_scores":choices,"holdout_years":"2019-2023","metrics":metrics,"all_sectors_beat_persistence":all(v["beats_persistence"] for v in metrics.values()),"selected_predictors_all_beat_persistence":all(v["selected_beats_persistence"] for v in metrics.values()),"selected_predictors_have_no_verified_skill_when_tied":True,"all_sectors_statistically_supported":all(v["statistically_supported_improvement"] for v in metrics.values()),"independent_provider_validation":False,"causal":False,"physical_units_conserved":False,"warnings":["Country-disjoint temporal holdout, but all outcomes share World Bank source","Complete-case selection biases toward well-reported countries","Using observed prior-year indicators means this is a one-step hindcast, not a free-running forecast","Regression coefficients are predictive associations, not physical interactions","Uncertainty calibration and geospatial rasters require separate evaluation"]}
  out=root/"reports";out.mkdir(exist_ok=True);(out/"six_sector_observed_holdout.json").write_text(json.dumps(report,indent=2));print(json.dumps(report,indent=2));return report
 if __name__=="__main__":run()
