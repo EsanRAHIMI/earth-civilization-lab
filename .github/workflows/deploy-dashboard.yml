@@ -19,6 +19,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   deploy:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -34,6 +35,13 @@ jobs:
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: web/model
+      - name: Normalize report filenames
+        if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+        run: |
+          test -s web/model/six_sector_observed_holdout.json
+          test -s web/model/six_sector_conformal_coverage.json
+          mv web/model/six_sector_observed_holdout.json web/model/holdout.json
+          mv web/model/six_sector_conformal_coverage.json web/model/uncertainty.json
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Verify dashboard
