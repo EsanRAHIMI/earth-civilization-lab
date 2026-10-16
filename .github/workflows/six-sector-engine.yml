@@ -1,0 +1,25 @@
+name: Experimental six-sector engine tests
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/experimental_six_sector_engine.py'
+      - 'src/spatial_coverage_aggregation.py'
+      - 'src/six_sector_scientific_readiness.py'
+      - 'tests/test_experimental_six_sector.py'
+      - '.github/workflows/six-sector-engine.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Unit tests
+        run: python -m unittest discover -s tests -p test_experimental_six_sector.py -v
+      - name: Publish honest readiness report
+        run: python -m src.six_sector_scientific_readiness
