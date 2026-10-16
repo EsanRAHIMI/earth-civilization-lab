@@ -39,7 +39,7 @@ def extract(selected_zip):
      raise ValueError("Unexpected wheat-yield measurement unit: "+unit)
     if element=="5312" and unit!="ha":
      raise ValueError("Unexpected harvested-area measurement unit")
-    if element=="5419":
+    if element=="5412":
      tonnes_per_ha=v/10000 if unit in ("hg/ha","100 g/ha") else v/1000
      value=tonnes_per_ha
      new_unit="t/ha"
@@ -90,7 +90,7 @@ def run(root="."):
    "original_zip_sha256":hashlib.sha256(raw).hexdigest(),
    "official_bulk_url":url,"source_update_date":record.get("DateUpdate"),
    "item":"wheat","crop_code":15,"elements":{"5312":"harvested_area","5412":"yield","5510":"production"},
-   "countries":panel,"unit_conversion":"hg/ha divided by 10000 = metric tons per ha",
+   "countries":panel,"unit_conversion":"FAOSTAT kg/ha /1000 or hg/ha /10000 gives metric tonnes/ha",
    "directly_measured_global_crop_yield":False,
    "independent_satellite_crop_area_validation":False,
    "spatial_support":"WHOLE COUNTRY: must not be joined directly to gridded NOAA rainfall rectangle",
