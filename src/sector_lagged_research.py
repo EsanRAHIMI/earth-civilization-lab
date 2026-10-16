@@ -6,12 +6,12 @@ NOT a physical or deployable forecast: predictor publication lags are unknown,
 and the same historical vintages have been examined during model development.
 """
 import collections
+import csv
 import json
 import math
 import pathlib
 import random
 import statistics
-from src.six_sector_observed_hindcast import read_panel
 from src.historical_calibration import solve
 
 SECTOR_FEATURES = {
@@ -22,6 +22,21 @@ SECTOR_FEATURES = {
 SPLITS = ((2013, 2016, 2019), (2016, 2019, 2023))
 SEEDS = (1103, 2107, 3109, 4111, 5113)
 MIN_TRAIN, MIN_VALIDATION, MIN_TEST = 25, 10, 10
+
+def read_full_panel(path):
+    """Read every registered World Bank indicator, not just the old six targets."""
+    panel = collections.defaultdict(dict)
+    with pathlib.Path(path).open(newline="") as stream:
+        for record in csv.DictReader(stream):
+            value = float(record["value"])
+            if not math.isfinite(value):
+                raise ValueError("Nonfinite predictor in raw panel")
+            key = (record["country"], int(record["year"]))
+            name = record["indicator"]
+            if name in panel[key]:
+                raise ValueError("Repeated country-year-indicator")
+            panel[key][name] = value
+    return panel
 
 def cohort(panel, sector):
     target, drivers = SECTOR_FEATURES[sector]
@@ -161,7 +176,7 @@ def execute(rows, seed, train_end, valid_end, test_end):
 
 def run(root="."):
     root = pathlib.Path(root)
-    panel = read_panel(root / "data/multisector_observations.csv")
+    panel = read_full_panel(root / "data/multisector_observations.csv")
     report = {"status": "exploratory_multiorigin_geographic_temporal_backtest",
               "design": "country-disjoint, time-disjoint, target-specific complete-case with exactly observed 1- and 2-year lags",
               "comparison": "identical cohort for each candidate per fold",
