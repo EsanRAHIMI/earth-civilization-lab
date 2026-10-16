@@ -8,7 +8,7 @@ import csv,datetime,hashlib,io,json,math,pathlib,urllib.request,zipfile
 MANIFEST="https://bulks-faostat.fao.org/production/datasets_E.json"
 COUNTRIES={"100":"India","5":"China","231":"United States of America"}
 WHEAT="15"
-ELEMENTS={"5419":"yield","5510":"harvested_area"}
+ELEMENTS={"5312":"harvested_area","5419":"yield","5510":"production"}
 YEARS=range(2005,2024)
 
 def extract(selected_zip):
@@ -37,15 +37,17 @@ def extract(selected_zip):
     unit=record["Unit"]
     if element=="5419" and unit not in ("100 g/ha","hg/ha","kg/ha"):
      raise ValueError("Unexpected wheat-yield measurement unit: "+unit)
-    if element=="5510" and unit!="ha":
+    if element=="5312" and unit!="ha":
      raise ValueError("Unexpected harvested-area measurement unit")
     if element=="5419":
      tonnes_per_ha=v/10000 if unit in ("hg/ha","100 g/ha") else v/1000
      value=tonnes_per_ha
      new_unit="t/ha"
     else:
+     if element=="5510" and unit not in ("t","tonnes"):
+      raise ValueError("Unexpected wheat-production mass unit: "+unit)
      value=v
-     new_unit="ha"
+     new_unit="ha" if element=="5312" else "t"
     out[key]={"value":value,"unit":new_unit,"flag":flag,"source_unit":unit}
  return out
 
@@ -67,12 +69,15 @@ def run(root="."):
  panel={}
  for country,name in COUNTRIES.items():
   for year in YEARS:
-   a=values.get((country,year,"5510"))
+   a=values.get((country,year,"5312"))
    y=values.get((country,year,"5419"))
-   if not a or not y:continue
+   production=values.get((country,year,"5510"))
+   if not a or not y or not production:continue
    panel.setdefault(name,[]).append({"year":year,
       "yield_t_ha":round(y["value"],8),"harvested_area_ha":round(a["value"],2),
       "wheat_output_estimate_t":round(a["value"]*y["value"],2),
+      "reported_production_t":production["value"],"reported_production_flag":production["flag"],
+      "production_mass_residual_t":round(a["value"]*y["value"]-production["value"],2),
       "yield_flag":y["flag"],"area_flag":a["flag"]})
  if any(len(panel.get(name,[]))<12 for name in COUNTRIES.values()):
   raise ValueError("Insufficient observed country-specific annual wheat records")
@@ -84,7 +89,7 @@ def run(root="."):
    "catalog_sha256":hashlib.sha256(index).hexdigest(),
    "original_zip_sha256":hashlib.sha256(raw).hexdigest(),
    "official_bulk_url":url,"source_update_date":record.get("DateUpdate"),
-   "item":"wheat","crop_code":15,"elements":{"5419":"yield","5510":"harvested_area"},
+   "item":"wheat","crop_code":15,"elements":{"5312":"harvested_area","5419":"yield","5510":"production"},
    "countries":panel,"unit_conversion":"hg/ha divided by 10000 = metric tons per ha",
    "directly_measured_global_crop_yield":False,
    "independent_satellite_crop_area_validation":False,
