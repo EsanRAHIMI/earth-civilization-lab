@@ -23,6 +23,8 @@ on:
       - 'src/nasa_temperature_hindcast.py'
       - 'src/climate_multisource_readiness.py'
       - 'src/climate_free_running_forecast.py'
+      - 'src/climate_aggi_physical_hindcast.py'
+      - 'tests/test_climate_aggi_physics.py'
       - 'tests/test_climate_free_running_forecast.py'
       - 'src/gcb_separate_sink_calibration.py'
       - 'src/joint_sink_drivers.py'
@@ -105,6 +107,8 @@ jobs:
         run: python -m src.climate_multisource_readiness
       - name: Real decadal forecast from 2014 state without future observed CO2 or temperature
         run: python -m src.climate_free_running_forecast
+      - name: NOAA AGGI full greenhouse-gas out-of-sample forcing hindcast
+        run: python -m src.climate_aggi_physical_hindcast
       - name: Fit temperature precipitation and land-use sink drivers when data available
         run: python -m src.joint_sink_drivers
       - name: Evaluate terrestrial sink with train-only model selection and untouched holdout
@@ -156,6 +160,8 @@ jobs:
             reports/nasa_temperature_hindcast.json
             reports/climate_multisource_readiness.json
             reports/climate_free_running_decadal_hindcast.json
+            reports/climate_aggi_decadal_hindcast.json
+            data/independent_raw/noaa_aggi_annual_ghg_forcing.csv
             reports/precipitation_provenance.json
             data/independent_raw/nasa_gistemp_global.csv
             reports/multibox_ensemble.json
