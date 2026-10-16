@@ -5,6 +5,9 @@ on:
     paths:
       - 'web/**'
       - '.github/workflows/deploy-dashboard.yml'
+  workflow_run:
+    workflows: ['Six-sector observed validation']
+    types: [completed]
   workflow_dispatch:
 permissions:
   contents: read
@@ -22,6 +25,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Download validated model reports
+        if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+        uses: actions/download-artifact@v4
+        with:
+          name: observed-six-sector-validation
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: web/model
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Verify dashboard
