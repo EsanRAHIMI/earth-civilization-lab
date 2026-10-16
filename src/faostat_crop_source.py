@@ -80,7 +80,7 @@ def run(root="."):
       "production_mass_residual_t":round(a["value"]*y["value"]-production["value"],2),
       "yield_flag":y["flag"],"area_flag":a["flag"]})
  if any(len(panel.get(name,[]))<12 for name in COUNTRIES.values()):
-  raise ValueError("Insufficient observed country-specific annual wheat records; per-country="+str({name:len(panel.get(name,[])) for name in COUNTRIES.values()})+"; extracted="+str(len(values))+"; first_keys="+str(list(values)[:10]))
+  raise ValueError("Insufficient observed country-specific annual wheat records; per-country="+str({name:len(panel.get(name,[])) for name in COUNTRIES.values()})+"; extracted="+str(len(values))+"; series="+str({(country,element):sum(k[0]==country and k[2]==element for k in values) for country in COUNTRIES for element in ELEMENTS}))
  folder=root/"data/independent_raw";folder.mkdir(parents=True,exist_ok=True)
  (folder/"faostat_qcl_original.zip").write_bytes(raw)
  report={"status":"FAOSTAT_country_wheat_yield_and_area_observations",
