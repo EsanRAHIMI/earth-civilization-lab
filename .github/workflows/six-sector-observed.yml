@@ -6,9 +6,12 @@ on:
     paths:
       - 'src/six_sector_observed_hindcast.py'
       - 'src/six_sector_robustness.py'
+      - 'src/science_data_audit.py'
+      - 'src/sector_lagged_research.py'
       - 'src/six_sector_conformal_coverage.py'
       - 'src/observed_grid_pipeline.py'
       - 'tests/test_six_sector_observed.py'
+      - 'tests/test_science_data_and_lags.py'
       - '.github/workflows/six-sector-observed.yml'
       - 'web/index.html'
   workflow_dispatch:
@@ -24,14 +27,20 @@ jobs:
           python-version: '3.11'
       - name: Download observed World Bank panel
         run: python -m src.multisector
+      - name: Verify immutable source snapshots, units, lineage and time coverage
+        run: python -m src.science_data_audit
       - name: Observed country-disjoint hindcast
         run: python -m src.six_sector_observed_hindcast
       - name: Multi-split climate water food robustness
         run: python -m src.six_sector_robustness
+      - name: Exploratory research - country and temporal blocked lagged sector folds
+        run: python -m src.sector_lagged_research
       - name: Country-disjoint uncertainty coverage
         run: python -m src.six_sector_conformal_coverage
-      - name: Unit tests
-        run: python -m unittest discover -s tests -p test_six_sector_observed.py -v
+      - name: Unit tests for source integrity, leak-free lags and observed benchmarks
+        run: |
+          python -m unittest discover -s tests -p test_six_sector_observed.py -v
+          python -m unittest discover -s tests -p test_science_data_and_lags.py -v
       - name: Prepare public dashboard model reports
         run: |
           mkdir -p web/model
@@ -45,5 +54,10 @@ jobs:
           path: |
             reports/six_sector_observed_holdout.json
             reports/six_sector_robustness.json
+            reports/scientific_data_lineage.json
+            reports/sector_lagged_research.json
+            data/multisector_manifest.json
+            data/multisector_observations.csv
+            data/multisector_raw/*.json
             reports/six_sector_conformal_coverage.json
           if-no-files-found: warn
