@@ -32,6 +32,9 @@ $('minMag').addEventListener('change',()=>{draw();renderEvents()});$('searchPlac
 const sectorKeys=['climate','energy','water','food','population','economy'];
 const coupling={climate:{energy:.008,economy:.004},energy:{economy:.025,climate:-.018},water:{climate:-.024,population:-.009},food:{water:.036,climate:-.029,energy:.012},population:{food:.010,economy:.006},economy:{energy:.028,food:.018,climate:-.015}};
 const damping={climate:.012,energy:.06,water:.09,food:.08,population:.025,economy:.055};
+// Scenarios remain explicitly hypothetical. No observed statistical hindcast is
+// wired to the forcing coefficients or interpreted as a validated projection.
+const scenarioValidated=false;
 function renderScenario(){
  const horizon=Number($('horizon').value),force=Number($('forcing').value),selected=$('scenarioSector').value;
  $('horizonValue').textContent=horizon;$('forcingValue').textContent=force.toFixed(3);
