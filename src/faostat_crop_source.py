@@ -6,9 +6,9 @@ with independent geospatial crop-yield validation.
 """
 import csv,datetime,hashlib,io,json,math,pathlib,urllib.request,zipfile
 MANIFEST="https://bulks-faostat.fao.org/production/datasets_E.json"
-COUNTRIES={"100":"India","5":"China","231":"United States of America"}
+COUNTRIES={"100":"India","165":"Pakistan","231":"United States of America"}
 WHEAT="15"
-ELEMENTS={"5312":"harvested_area","5419":"yield","5510":"production"}
+ELEMENTS={"5312":"harvested_area","5412":"yield","5510":"production"}
 YEARS=range(2005,2024)
 
 def extract(selected_zip):
@@ -35,7 +35,7 @@ def extract(selected_zip):
     key=(country,year,element)
     if key in out:raise ValueError("Duplicate FAOSTAT crop observation")
     unit=record["Unit"]
-    if element=="5419" and unit not in ("100 g/ha","hg/ha","kg/ha"):
+    if element=="5412" and unit not in ("100 g/ha","hg/ha","kg/ha"):
      raise ValueError("Unexpected wheat-yield measurement unit: "+unit)
     if element=="5312" and unit!="ha":
      raise ValueError("Unexpected harvested-area measurement unit")
@@ -70,7 +70,7 @@ def run(root="."):
  for country,name in COUNTRIES.items():
   for year in YEARS:
    a=values.get((country,year,"5312"))
-   y=values.get((country,year,"5419"))
+   y=values.get((country,year,"5412"))
    production=values.get((country,year,"5510"))
    if not a or not y or not production:continue
    panel.setdefault(name,[]).append({"year":year,
@@ -89,7 +89,7 @@ def run(root="."):
    "catalog_sha256":hashlib.sha256(index).hexdigest(),
    "original_zip_sha256":hashlib.sha256(raw).hexdigest(),
    "official_bulk_url":url,"source_update_date":record.get("DateUpdate"),
-   "item":"wheat","crop_code":15,"elements":{"5312":"harvested_area","5419":"yield","5510":"production"},
+   "item":"wheat","crop_code":15,"elements":{"5312":"harvested_area","5412":"yield","5510":"production"},
    "countries":panel,"unit_conversion":"hg/ha divided by 10000 = metric tons per ha",
    "directly_measured_global_crop_yield":False,
    "independent_satellite_crop_area_validation":False,
