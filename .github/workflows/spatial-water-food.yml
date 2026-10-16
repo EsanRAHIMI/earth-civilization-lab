@@ -7,6 +7,8 @@ on:
       - 'src/spatial_water_crop_operator.py'
       - 'src/gpcp_spatial_precipitation.py'
       - 'src/faostat_crop_source.py'
+      - 'src/country_aligned_wheat_rain_benchmark.py'
+      - 'tests/test_country_aligned_wheat_rain.py'
       - 'tests/test_faostat_crop_source.py'
       - 'tests/test_spatial_water_crop_operator.py'
       - 'tests/test_gpcp_spatial_precipitation.py'
@@ -23,16 +25,19 @@ jobs:
         with:
           python-version: '3.12'
       - name: Install pinned scientific NetCDF and numeric readers
-        run: python -m pip install numpy==2.2.6 netCDF4==1.7.2
+        run: python -m pip install numpy==2.2.6 netCDF4==1.7.2 shapely==2.1.2 pyproj==3.7.2
       - name: Verify physical water accounting and gridded climate units
         run: |
           python -m unittest discover -s tests -p test_spatial_water_crop_operator.py -v
           python -m unittest discover -s tests -p test_gpcp_spatial_precipitation.py -v
           python -m unittest discover -s tests -p test_faostat_crop_source.py -v
+          python -m unittest discover -s tests -p test_country_aligned_wheat_rain.py -v
       - name: Download genuine NOAA GPCP rainfall and aggregate audited rectangles
         run: python -m src.gpcp_spatial_precipitation
       - name: Acquire real FAOSTAT QCL wheat yield and harvested area with exact units
         run: python -m src.faostat_crop_source
+      - name: Align genuine country polygons with satellite rain and FAOSTAT yields
+        run: python -m src.country_aligned_wheat_rain_benchmark
       - name: Publish original gridded source and actual observations
         if: always()
         uses: actions/upload-artifact@v4
@@ -45,3 +50,5 @@ jobs:
             reports/gpcp_spatial_precipitation.json
             reports/faostat_wheat_country_observations.json
             data/independent_raw/faostat_qcl_original.zip
+            data/independent_raw/naturalearth_country_polygons_110m.geojson
+            reports/country_aligned_wheat_rain_benchmark.json
