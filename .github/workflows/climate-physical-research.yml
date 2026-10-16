@@ -8,6 +8,9 @@ on:
       - 'src/climate_free_running_forecast.py'
       - 'src/climate_aggi_physical_hindcast.py'
       - 'src/climate_igcc_full_forcing.py'
+      - 'src/climate_joint_temperature_ocean.py'
+      - 'src/noaa_ocean_heat_import.py'
+      - 'tests/test_climate_joint_temperature_ocean.py'
       - 'tests/test_climate_igcc_full_forcing.py'
       - 'tests/test_climate_aggi_physics.py'
       - '.github/workflows/climate-physical-research.yml'
@@ -27,6 +30,7 @@ jobs:
           python -m unittest discover -s tests -p test_climate_aggi_physics.py -v
           python -m unittest discover -s tests -p test_climate_free_running_forecast.py -v
           python -m unittest discover -s tests -p test_climate_igcc_full_forcing.py -v
+          python -m unittest discover -s tests -p test_climate_joint_temperature_ocean.py -v
       - name: NASA NOAA source ingestion
         run: python -m src.climate_observation_acquire
       - name: Physically dimensioned CO2 baseline
@@ -35,6 +39,10 @@ jobs:
         run: python -m src.climate_aggi_physical_hindcast
       - name: IPCC aligned aerosol solar and volcanic physical forcing benchmark
         run: python -m src.climate_igcc_full_forcing
+      - name: Import NOAA ocean heat content and source provenance
+        run: python -m src.noaa_ocean_heat_import
+      - name: Joint physical NASA temperature and NOAA 0-2000m ocean heat validation
+        run: python -m src.climate_joint_temperature_ocean
       - name: Publish raw observation and backtest evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -44,6 +52,8 @@ jobs:
             reports/climate_*json
             data/independent_raw/noaa_aggi_annual_ghg_forcing.csv
             data/independent_raw/igcc_2024_annual_erf_best.csv
+            data/independent_raw/ocean_heat_content_annual.csv
+            reports/ocean_heat_content_provenance.json
             data/independent_raw/noaa_global_annual_co2.csv
             data/independent_raw/nasa_gistemp_global.csv
           if-no-files-found: warn
