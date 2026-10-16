@@ -7,6 +7,8 @@ on:
       - 'src/climate_observation_acquire.py'
       - 'src/climate_free_running_forecast.py'
       - 'src/climate_aggi_physical_hindcast.py'
+      - 'src/climate_igcc_full_forcing.py'
+      - 'tests/test_climate_igcc_full_forcing.py'
       - 'tests/test_climate_aggi_physics.py'
       - '.github/workflows/climate-physical-research.yml'
 permissions:
@@ -24,12 +26,15 @@ jobs:
         run: |
           python -m unittest discover -s tests -p test_climate_aggi_physics.py -v
           python -m unittest discover -s tests -p test_climate_free_running_forecast.py -v
+          python -m unittest discover -s tests -p test_climate_igcc_full_forcing.py -v
       - name: NASA NOAA source ingestion
         run: python -m src.climate_observation_acquire
       - name: Physically dimensioned CO2 baseline
         run: python -m src.climate_free_running_forecast
       - name: NOAA AGGI greenhouse forcing experiment
         run: python -m src.climate_aggi_physical_hindcast
+      - name: IPCC aligned aerosol solar and volcanic physical forcing benchmark
+        run: python -m src.climate_igcc_full_forcing
       - name: Publish raw observation and backtest evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -38,6 +43,7 @@ jobs:
           path: |
             reports/climate_*json
             data/independent_raw/noaa_aggi_annual_ghg_forcing.csv
+            data/independent_raw/igcc_2024_annual_erf_best.csv
             data/independent_raw/noaa_global_annual_co2.csv
             data/independent_raw/nasa_gistemp_global.csv
           if-no-files-found: warn
