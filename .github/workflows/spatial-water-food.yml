@@ -6,6 +6,8 @@ on:
     paths:
       - 'src/spatial_water_crop_operator.py'
       - 'src/gpcp_spatial_precipitation.py'
+      - 'src/faostat_crop_source.py'
+      - 'tests/test_faostat_crop_source.py'
       - 'tests/test_spatial_water_crop_operator.py'
       - 'tests/test_gpcp_spatial_precipitation.py'
       - '.github/workflows/spatial-water-food.yml'
@@ -26,8 +28,11 @@ jobs:
         run: |
           python -m unittest discover -s tests -p test_spatial_water_crop_operator.py -v
           python -m unittest discover -s tests -p test_gpcp_spatial_precipitation.py -v
+          python -m unittest discover -s tests -p test_faostat_crop_source.py -v
       - name: Download genuine NOAA GPCP rainfall and aggregate audited rectangles
         run: python -m src.gpcp_spatial_precipitation
+      - name: Acquire real FAOSTAT QCL wheat yield and harvested area with exact units
+        run: python -m src.faostat_crop_source
       - name: Publish original gridded source and actual observations
         if: always()
         uses: actions/upload-artifact@v4
@@ -38,3 +43,5 @@ jobs:
           path: |
             data/independent_raw/noaa_gpcp_v23_monthly.nc
             reports/gpcp_spatial_precipitation.json
+            reports/faostat_wheat_country_observations.json
+            data/independent_raw/faostat_qcl_original.zip
