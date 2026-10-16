@@ -12,9 +12,9 @@ class FAOWheatSourceTests(unittest.TestCase):
  def test_yield_hg_and_area_ha(self):
   record=lambda code,unit,val:{"Area Code":"100","Item Code":"15","Element Code":code,
     "Year":"2019","Unit":unit,"Value":str(val),"Flag":"A"}
-  observed=extract(self.fixture([record("5419","hg/ha",30000),record("5510","ha",1000)]))
+  observed=extract(self.fixture([record("5419","hg/ha",30000),record("5312","ha",1000),record("5510","t",3000)]))
   self.assertEqual(observed[("100",2019,"5419")]["value"],3.)
-  self.assertEqual(observed[("100",2019,"5510")]["value"],1000.)
+  self.assertEqual(observed[("100",2019,"5312")]["value"],1000.)
   self.assertEqual(observed[("100",2019,"5419")]["flag"],"A")
  def test_wrong_measurement_unit_rejected(self):
   row={"Area Code":"100","Item Code":"15","Element Code":"5419","Year":"2019",
