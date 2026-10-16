@@ -19,6 +19,14 @@ Independent physical climate, freshwater-storage or crop-yield forecast skill; m
 
 In a 2026-10-16 exploratory country-and-time blocked experiment (5 fixed country splits × 2 temporal origins for each target), positive held-out improvement against persistence occurred for emissions in **1/10**, withdrawals in **0/10** and food index in **2/10** splits. Country-block bootstrap lower improvement bounds were positive in **0/10** for each target. Repeated splits are correlated and historical source vintages have already been inspected during development. The results do **not** establish new scientific predictive skill.
 
+## Independent physical climate research benchmark (16 Oct 2026)
+
+A separately reproducible [climate physics research workflow](.github/workflows/climate-physical-research.yml) now retrieves the actual NASA GISTEMP global temperature observations, NOAA GML global annual atmospheric CO2, NOAA AGGI radiative forcing from all long-lived greenhouse gases and the pinned IGCC 2024 global effective radiative-forcing archive (tag v2025.06.11; includes anthropogenic aerosol, solar and volcanic components). Source bytes and SHA-256 hashes are included in a CI artifact.
+
+All three two-layer physical models calibrate through 2014 and simulate 2015-2024 **without feeding observed future atmospheric concentration, forcing or temperature into the forecast**. MAE on the ten-year interval: CO2-only **0.2510 °C**, NOAA AGGI **0.2506 °C**, IGCC total forcing **0.2195 °C**, frozen-2014 baseline **0.2340 °C**, training-only historical linear temperature trend **0.1732 °C**. The IGCC experiment improves over the former physically incomplete CO2-only model, but **still fails to beat the linear-trend baseline**. The 2015-2024 historical holdout is exploratory, not a new sealed prospective experiment, and forcing from a retrospective 2025 product is not an as-of-2014 vintage.
+
+Full physical formulation, data DOIs, fixed experimental configuration and exclusions: [Climate frozen-2014 experiment](docs/CLIMATE_2014_FROZEN_PHYSICAL_BENCHMARK.md). Successful [empirical CI](https://github.com/EsanRAHIMI/earth-civilization-lab/actions/runs/38909576456) publishes raw data and all three backtests; the scientific release gate **remains blocked**.
+
 ## Documentation
 
 - [Scientific architecture, international methods and acceptance criteria](docs/EARTHLAB_RESEARCH_ARCHITECTURE_2026.md)
