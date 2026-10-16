@@ -1,0 +1,34 @@
+name: FAOSTAT official crop evidence
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/faostat_crop_source.py'
+      - 'tests/test_faostat_crop_source.py'
+      - '.github/workflows/faostat-crop.yml'
+permissions:
+  contents: read
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Test crop mass conversion and quality flags
+        run: python -m unittest discover -s tests -p test_faostat_crop_source.py -v
+      - name: Download original FAOSTAT bulk QCL crop records
+        run: python -m src.faostat_crop_source
+      - name: Preserve original FAO ZIP and filtered evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: faostat-wheat-observation-source
+          retention-days: 90
+          if-no-files-found: warn
+          path: |
+            data/independent_raw/faostat_qcl_original.zip
+            reports/faostat_wheat_country_observations.json
