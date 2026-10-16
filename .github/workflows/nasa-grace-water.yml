@@ -1,0 +1,31 @@
+name: NASA GRACE protected physical water data
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  earthdata_authenticated:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install versioned NASA access and NetCDF
+        run: python -m pip install earthaccess==0.16.0 netCDF4==1.7.2 numpy==2.2.6
+      - name: Check scientific metadata and NetCDF schema
+        run: python -m unittest discover -s tests -p test_nasa_grace_secure_ingest.py -v
+      - name: Retrieve protected JPL GRACE mascons
+        env:
+          EARTHDATA_TOKEN: ${{ secrets.EARTHDATA_TOKEN }}
+        run: python -m src.nasa_grace_secure_ingest
+      - name: Publish strictly blocked physical-water observational audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: nasa-grace-source-evidence
+          retention-days: 30
+          if-no-files-found: warn
+          path: |
+            reports/nasa_grace_mascon_observation_manifest.json
