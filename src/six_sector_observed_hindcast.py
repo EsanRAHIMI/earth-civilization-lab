@@ -45,6 +45,27 @@ def fit(train,penalty):
   z=design(x)
   return [sum(a*b for a,b in zip(beta,z)) for beta in coefs]
  return predict,{"means":means,"scales":scales,"coefficients":coefs,"penalty":penalty}
+def fit_change(train,penalty,mode="own"):
+ """Ridge regression of annual log changes, anchored to persistence."""
+ if len(train)<20:raise ValueError("Insufficient training rows")
+ means=[statistics.mean(row[2][i] for row in train) for i in range(6)]
+ scales=[statistics.pstdev(row[2][i] for row in train) or 1. for i in range(6)]
+ def design(x,i):
+  ix=[i] if mode=="own" else list(range(6))
+  return [1.]+[(x[j]-means[j])/scales[j] for j in ix]
+ coefficients=[]
+ for target in range(6):
+  size=2 if mode=="own" else 7
+  a=[[0.]*size for _ in range(size)];b=[0.]*size
+  for _,_,x,y in train:
+   z=design(x,target)
+   for j in range(size):
+    b[j]+=z[j]*(y[target]-x[target])
+    for k in range(size):a[j][k]+=z[j]*z[k]
+  for j in range(1,size):a[j][j]+=penalty
+  coefficients.append(solve(a,b))
+ return lambda x:[x[i]+sum(v*z for v,z in zip(coefficients[i],design(x,i))) for i in range(6)]
+
 def evaluate(rows,predict):
  out={}
  for i,sector in enumerate(TARGETS):
@@ -65,24 +86,39 @@ def run(root="."):
  validation=[r for r in rows if r[0] not in hold_c and 2019<=r[1]+1<=2023]
  holdout=[r for r in rows if r[0] in hold_c and 2019<=r[1]+1<=2023]
  if min(len(development),len(validation),len(holdout))<20:raise ValueError("Insufficient disjoint train/validation/test complete pairs")
- choices=[]
- for p in (0.1,1.,10.,100.):
-  fn,_=fit(development,p);m=evaluate(validation,fn)
-  choices.append((statistics.mean(v["model_smape_percent"] for v in m.values()),p))
- penalty=min(choices)[1]
- # Choose model versus persistence for each sector using development validation only.
- selected_fn,_=fit(development,penalty)
- validation_metrics=evaluate(validation,selected_fn)
- selected={sector:("regression" if val["beats_persistence"] else "persistence") for sector,val in validation_metrics.items()}
+ def candidate(name,penalty,training):
+  if name=="persistence":return lambda x:list(x)
+  if name=="level":return fit(training,penalty)[0]
+  return fit_change(training,penalty,name)
+ specs=[("persistence",0.)]+[(mode,p) for mode in ("own","joint","level") for p in (0.1,1.,10.,100.)]
+ validation_scores={}
+ for mode,p in specs:
+  key=mode+":"+str(p)
+  validation_scores[key]=evaluate(validation,candidate(mode,p,development))
+ selected={}
+ for sector in TARGETS:
+  choices=[(v[sector]["model_smape_percent"],key) for key,v in validation_scores.items()]
+  score,key=min(choices)
+  selected[sector]=key
  train=[r for r in rows if r[0] not in hold_c and r[1]+1<=2023]
- fn,parameters=fit(train,penalty)
- metrics=evaluate(holdout,fn)
- # Honest held-out evaluation of the validation-selected predictor.
- # No test information influences predictor choice.
- for sector,values in metrics.items():
-  values["selected_predictor"]=selected[sector]
-  values["selected_smape_percent"]=values["model_smape_percent"] if selected[sector]=="regression" else values["persistence_smape_percent"]
-  values["selected_beats_persistence"]=values["selected_smape_percent"]<values["persistence_smape_percent"]
+ models={}
+ for key in set(selected.values())|{"persistence:0.0"}:
+  mode,penalty=key.split(":")
+  models[key]=candidate(mode,float(penalty),train)
+ metrics={}
+ for sector in TARGETS:
+  chosen=evaluate(holdout,models[selected[sector]])[sector]
+  baseline=evaluate(holdout,models["persistence:0.0"])[sector]
+  chosen["persistence_smape_percent"]=baseline["model_smape_percent"]
+  chosen["selected_predictor"]=selected[sector]
+  chosen["selected_smape_percent"]=chosen["model_smape_percent"]
+  chosen["selected_beats_persistence"]=chosen["model_smape_percent"]<baseline["model_smape_percent"]-1e-9
+  chosen["beats_persistence"]=chosen["selected_beats_persistence"]
+  metrics[sector]=chosen
+ penalty=None
+ validation_metrics=validation_scores
+ choices=[(key,statistics.mean(v[s]["model_smape_percent"] for s in TARGETS)) for key,v in validation_scores.items()]
+
  report={"status":"country_disjoint_historical_holdout_evaluated","data_source":"World Bank country indicator observations","indicator_mapping":TARGETS,"sample_policy":"Six strictly positive observed indicators in both consecutive years; no imputation","train_pairs":len(train),"validation_pairs":len(validation),"holdout_pairs":len(holdout),"holdout_countries":sorted(hold_c),"train_countries":len(set(r[0] for r in train)),"validation_selection_penalty":penalty,"validation_selected_predictors":selected,"validation_model_vs_persistence":validation_metrics,"validation_scores":choices,"holdout_years":"2019-2023","metrics":metrics,"all_sectors_beat_persistence":all(v["beats_persistence"] for v in metrics.values()),"selected_predictors_all_beat_persistence":all(v["selected_beats_persistence"] for v in metrics.values()),"selected_predictors_have_no_verified_skill_when_tied":True,"independent_provider_validation":False,"causal":False,"physical_units_conserved":False,"warnings":["Country-disjoint temporal holdout, but all outcomes share World Bank source","Complete-case selection biases toward well-reported countries","Using observed prior-year indicators means this is a one-step hindcast, not a free-running forecast","Regression coefficients are predictive associations, not physical interactions","Uncertainty calibration and geospatial rasters require separate evaluation"]}
  out=root/"reports";out.mkdir(exist_ok=True);(out/"six_sector_observed_holdout.json").write_text(json.dumps(report,indent=2));print(json.dumps(report,indent=2));return report
 if __name__=="__main__":run()
