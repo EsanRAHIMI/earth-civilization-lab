@@ -34,13 +34,13 @@ def annual_records(path, year_field, value_field, begin=1980, end=2024):
 def run(root="."):
     root = pathlib.Path(root)
     inputs = {
-        "surface_temperature": (root/"data/independent_raw/nasa_gistemp_global.csv", "Year", "J-D", "celsius_anomaly_relative_1951_1980", "NASA GISTEMP v4"),
-        "atmospheric_co2": (root/"data/independent_raw/noaa_global_annual_co2.csv", "year", "mean", "ppm", "NOAA GML"),
-        "global_precipitation": (root/"data/independent_raw/global_land_precipitation_annual.csv", "year", "precipitation_mm", "mm_per_year", "ERA5 reanalysis via OWID; not certified land-only"),
+        "surface_temperature": (root/"data/independent_raw/nasa_gistemp_global.csv", "Year", "J-D", "celsius_anomaly_relative_1951_1980", "NASA GISTEMP v4", "global land+ocean temperature anomaly, 1951-1980 reference"),
+        "atmospheric_co2": (root/"data/independent_raw/noaa_global_annual_co2.csv", "year", "mean", "ppm", "NOAA GML", "global mean atmospheric CO2 mole fraction"),
+        "global_precipitation": (root/"data/independent_raw/global_land_precipitation_annual.csv", "year", "precipitation_mm", "mm_per_year", "ERA5 reanalysis via OWID; not certified land-only", "OWID World precipitation aggregation, exact land/ocean mask unverified"),
     }
     records = {}
     datasets = {}
-    for key, (path, year_col, value_col, unit, lineage) in inputs.items():
+    for key, (path, year_col, value_col, unit, lineage, support) in inputs.items():
         rows = annual_records(path, year_col, value_col)
         # An independent historical variable needs at least 40 observations
         # for the stated audit window; fail rather than fill missing values.
@@ -58,7 +58,7 @@ def run(root="."):
             "first_year": min(rows), "last_year": max(rows),
             "file_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
             "missing_years_1980_2024": sorted(set(range(1980,2025))-set(rows)),
-            "geographic_support": "world_global_aggregate; temperature anomaly baseline is 1951-1980",
+            "geographic_support": support,
         }
     overlap = sorted(set.intersection(*(set(data) for data in records.values())))
     if len(overlap) < 40:
