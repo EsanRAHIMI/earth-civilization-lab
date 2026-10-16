@@ -1,0 +1,43 @@
+name: Climate physical research
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/climate_observation_acquire.py'
+      - 'src/climate_free_running_forecast.py'
+      - 'src/climate_aggi_physical_hindcast.py'
+      - 'tests/test_climate_aggi_physics.py'
+      - '.github/workflows/climate-physical-research.yml'
+permissions:
+  contents: read
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Scientific unit tests
+        run: |
+          python -m unittest discover -s tests -p test_climate_aggi_physics.py -v
+          python -m unittest discover -s tests -p test_climate_free_running_forecast.py -v
+      - name: NASA NOAA source ingestion
+        run: python -m src.climate_observation_acquire
+      - name: Physically dimensioned CO2 baseline
+        run: python -m src.climate_free_running_forecast
+      - name: NOAA AGGI greenhouse forcing experiment
+        run: python -m src.climate_aggi_physical_hindcast
+      - name: Publish raw observation and backtest evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: climate-physical-evidence
+          path: |
+            reports/climate_*json
+            data/independent_raw/noaa_aggi_annual_ghg_forcing.csv
+            data/independent_raw/noaa_global_annual_co2.csv
+            data/independent_raw/nasa_gistemp_global.csv
+          if-no-files-found: warn
