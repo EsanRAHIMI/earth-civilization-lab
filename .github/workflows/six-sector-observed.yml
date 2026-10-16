@@ -27,6 +27,11 @@ jobs:
         run: python -m src.six_sector_conformal_coverage
       - name: Unit tests
         run: python -m unittest discover -s tests -p test_six_sector_observed.py -v
+      - name: Prepare public dashboard model reports
+        run: |
+          mkdir -p web/model
+          cp reports/six_sector_observed_holdout.json web/model/holdout.json
+          cp reports/six_sector_conformal_coverage.json web/model/uncertainty.json
       - name: Upload validation reports
         if: always()
         uses: actions/upload-artifact@v4
