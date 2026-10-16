@@ -27,6 +27,21 @@ All three two-layer physical models calibrate through 2014 and simulate 2015-202
 
 Full physical formulation, data DOIs, fixed experimental configuration and exclusions: [Climate frozen-2014 experiment](docs/CLIMATE_2014_FROZEN_PHYSICAL_BENCHMARK.md). Successful [empirical CI](https://github.com/EsanRAHIMI/earth-civilization-lab/actions/runs/38909576456) publishes raw data and all three backtests; the scientific release gate **remains blocked**.
 
+## Joint atmosphere–ocean heat experiment (2026-10-16)
+
+The reproducible [physical climate workflow](https://github.com/EsanRAHIMI/earth-civilization-lab/actions/runs/38910826522) additionally downloads **real NOAA NCEI annual 0–700m and 0–2000m World Ocean heat-content records** (no repository fallback used in this execution), simultaneously fits a two-layer global energy balance against NASA surface-temperature anomalies (1980–2014) and NOAA 0–2000m ocean heat (2005–2014), and **free-runs the ten-year 2015–2024 test** without observing test-year atmospheric forcing, surface temperature or ocean heat during fitting or projection.
+
+| 2015–2024 MAE | Fitted joint physics | Frozen 2014 | Train-only trend |
+| --- | ---: | ---: | ---: |
+| NASA global surface temperature (°C) | 0.2011 | 0.2340 | **0.1732** |
+| NOAA 0–2000m ocean-heat anomaly (ZJ) | **6.00** | 55.72 | 14.49 |
+
+The improvement in effective ocean heat is meaningful as a *historical benchmark*, not scientific validation. The two-layer heat state is **not geometrically or physically identical to the observed 0–2000m ocean inventory**, and an effective ocean-storage conversion fraction is inferred on a very short **10-year NOAA training sequence**. This parameter is not physically identified, with no joint full-depth heat closure, no independent uncertainty calibration, and a retrospectively revised forcing archive. The NASA temperature forecast still loses to the training-only trend. Thus deployment/decision scenarios **remain BLOCKED**.
+
+A separate unit/integration test **changes observed NOAA heat labels from 2015 onward by +10,000 ZJ**, and verifies that fit parameters and predicted temperature/ocean-heat curves remain *bit-for-bit identical*. That test passed in the same CI run.
+
+[Model source](src/climate_joint_temperature_ocean.py) · [No-leakage integration test](tests/test_climate_joint_observed_holdout_leakage.py) · [Run and raw evidence artifact](https://github.com/EsanRAHIMI/earth-civilization-lab/actions/runs/38910826522)
+
 ## Documentation
 
 - [Scientific architecture, international methods and acceptance criteria](docs/EARTHLAB_RESEARCH_ARCHITECTURE_2026.md)
