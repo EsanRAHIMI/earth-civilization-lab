@@ -70,9 +70,19 @@ def run(root="."):
   fn,_=fit(development,p);m=evaluate(validation,fn)
   choices.append((statistics.mean(v["model_smape_percent"] for v in m.values()),p))
  penalty=min(choices)[1]
+ # Choose model versus persistence for each sector using development validation only.
+ selected_fn,_=fit(development,penalty)
+ validation_metrics=evaluate(validation,selected_fn)
+ selected={sector:("regression" if val["beats_persistence"] else "persistence") for sector,val in validation_metrics.items()}
  train=[r for r in rows if r[0] not in hold_c and r[1]+1<=2023]
  fn,parameters=fit(train,penalty)
  metrics=evaluate(holdout,fn)
- report={"status":"country_disjoint_historical_holdout_evaluated","data_source":"World Bank country indicator observations","indicator_mapping":TARGETS,"sample_policy":"Six strictly positive observed indicators in both consecutive years; no imputation","train_pairs":len(train),"validation_pairs":len(validation),"holdout_pairs":len(holdout),"holdout_countries":sorted(hold_c),"train_countries":len(set(r[0] for r in train)),"validation_selection_penalty":penalty,"validation_scores":choices,"holdout_years":"2019-2023","metrics":metrics,"all_sectors_beat_persistence":all(v["beats_persistence"] for v in metrics.values()),"independent_provider_validation":False,"causal":False,"physical_units_conserved":False,"warnings":["Country-disjoint temporal holdout, but all outcomes share World Bank source","Complete-case selection biases toward well-reported countries","Using observed prior-year indicators means this is a one-step hindcast, not a free-running forecast","Regression coefficients are predictive associations, not physical interactions","Uncertainty calibration and geospatial rasters require separate evaluation"]}
+ # Honest held-out evaluation of the validation-selected predictor.
+ # No test information influences predictor choice.
+ for sector,values in metrics.items():
+  values["selected_predictor"]=selected[sector]
+  values["selected_smape_percent"]=values["model_smape_percent"] if selected[sector]=="regression" else values["persistence_smape_percent"]
+  values["selected_beats_persistence"]=values["selected_smape_percent"]<values["persistence_smape_percent"]
+ report={"status":"country_disjoint_historical_holdout_evaluated","data_source":"World Bank country indicator observations","indicator_mapping":TARGETS,"sample_policy":"Six strictly positive observed indicators in both consecutive years; no imputation","train_pairs":len(train),"validation_pairs":len(validation),"holdout_pairs":len(holdout),"holdout_countries":sorted(hold_c),"train_countries":len(set(r[0] for r in train)),"validation_selection_penalty":penalty,"validation_selected_predictors":selected,"validation_model_vs_persistence":validation_metrics,"validation_scores":choices,"holdout_years":"2019-2023","metrics":metrics,"all_sectors_beat_persistence":all(v["beats_persistence"] for v in metrics.values()),"selected_predictors_all_beat_persistence":all(v["selected_beats_persistence"] for v in metrics.values()),"independent_provider_validation":False,"causal":False,"physical_units_conserved":False,"warnings":["Country-disjoint temporal holdout, but all outcomes share World Bank source","Complete-case selection biases toward well-reported countries","Using observed prior-year indicators means this is a one-step hindcast, not a free-running forecast","Regression coefficients are predictive associations, not physical interactions","Uncertainty calibration and geospatial rasters require separate evaluation"]}
  out=root/"reports";out.mkdir(exist_ok=True);(out/"six_sector_observed_holdout.json").write_text(json.dumps(report,indent=2));print(json.dumps(report,indent=2));return report
 if __name__=="__main__":run()
