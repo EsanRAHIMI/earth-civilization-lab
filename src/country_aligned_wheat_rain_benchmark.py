@@ -10,7 +10,7 @@ from src.faostat_crop_source import COUNTRIES
 from src.gpcp_spatial_precipitation import SOURCE as GPCP_SOURCE
 
 GEOMETRY_SOURCE="https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson"
-COUNTRY_ISO={"India":"IND","China":"CHN","United States of America":"USA"}
+COUNTRY_ISO={"India":"IND","Pakistan":"PAK","United States of America":"USA"}
 YEARS=range(2005,2024)
 def fetch_geometry(fetcher=None):
  if fetcher is None:
