@@ -8,6 +8,7 @@ on:
       - 'src/observed_grid_pipeline.py'
       - 'tests/test_six_sector_observed.py'
       - '.github/workflows/six-sector-observed.yml'
+      - 'web/index.html'
   workflow_dispatch:
 permissions:
   contents: read
