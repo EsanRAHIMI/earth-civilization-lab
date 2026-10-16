@@ -9,6 +9,8 @@ on:
       - 'src/climate_aggi_physical_hindcast.py'
       - 'src/climate_igcc_full_forcing.py'
       - 'src/climate_joint_temperature_ocean.py'
+      - 'src/hadcrut_independent_climate_test.py'
+      - 'tests/test_hadcrut_independent_climate.py'
       - 'src/noaa_ocean_heat_import.py'
       - 'tests/test_climate_joint_temperature_ocean.py'
       - 'tests/test_climate_joint_observed_holdout_leakage.py'
@@ -32,6 +34,7 @@ jobs:
           python -m unittest discover -s tests -p test_climate_free_running_forecast.py -v
           python -m unittest discover -s tests -p test_climate_igcc_full_forcing.py -v
           python -m unittest discover -s tests -p test_climate_joint_temperature_ocean.py -v
+          python -m unittest discover -s tests -p test_hadcrut_independent_climate.py -v
       - name: NASA NOAA source ingestion
         run: python -m src.climate_observation_acquire
       - name: Physically dimensioned CO2 baseline
@@ -44,6 +47,8 @@ jobs:
         run: python -m src.noaa_ocean_heat_import
       - name: Joint physical NASA temperature and NOAA 0-2000m ocean heat validation
         run: python -m src.climate_joint_temperature_ocean
+      - name: Independently compare physical prediction with Met Office HadCRUT5 current reference
+        run: python -m src.hadcrut_independent_climate_test
       - name: Verify future NOAA ocean heat labels cannot influence model predictions
         run: python -m unittest discover -s tests -p test_climate_joint_observed_holdout_leakage.py -v
       - name: Publish raw observation and backtest evidence
@@ -56,6 +61,7 @@ jobs:
             data/independent_raw/noaa_aggi_annual_ghg_forcing.csv
             data/independent_raw/igcc_2024_annual_erf_best.csv
             data/independent_raw/ocean_heat_content_annual.csv
+            data/independent_raw/hadcrut5_global_annual_v5200.csv
             reports/ocean_heat_content_provenance.json
             data/independent_raw/noaa_global_annual_co2.csv
             data/independent_raw/nasa_gistemp_global.csv
