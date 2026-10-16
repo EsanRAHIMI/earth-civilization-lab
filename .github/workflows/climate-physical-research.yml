@@ -11,6 +11,7 @@ on:
       - 'src/climate_joint_temperature_ocean.py'
       - 'src/noaa_ocean_heat_import.py'
       - 'tests/test_climate_joint_temperature_ocean.py'
+      - 'tests/test_climate_joint_observed_holdout_leakage.py'
       - 'tests/test_climate_igcc_full_forcing.py'
       - 'tests/test_climate_aggi_physics.py'
       - '.github/workflows/climate-physical-research.yml'
@@ -43,6 +44,8 @@ jobs:
         run: python -m src.noaa_ocean_heat_import
       - name: Joint physical NASA temperature and NOAA 0-2000m ocean heat validation
         run: python -m src.climate_joint_temperature_ocean
+      - name: Verify future NOAA ocean heat labels cannot influence model predictions
+        run: python -m unittest discover -s tests -p test_climate_joint_observed_holdout_leakage.py -v
       - name: Publish raw observation and backtest evidence
         if: always()
         uses: actions/upload-artifact@v4
