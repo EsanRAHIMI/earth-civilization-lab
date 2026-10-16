@@ -8,10 +8,12 @@ on:
       - 'src/six_sector_robustness.py'
       - 'src/science_data_audit.py'
       - 'src/sector_lagged_research.py'
+      - 'src/physical_water_food_accounting.py'
       - 'src/six_sector_conformal_coverage.py'
       - 'src/observed_grid_pipeline.py'
       - 'tests/test_six_sector_observed.py'
       - 'tests/test_science_data_and_lags.py'
+      - 'tests/test_water_food_conservation.py'
       - '.github/workflows/six-sector-observed.yml'
       - 'web/index.html'
   workflow_dispatch:
@@ -41,6 +43,7 @@ jobs:
         run: |
           python -m unittest discover -s tests -p test_six_sector_observed.py -v
           python -m unittest discover -s tests -p test_science_data_and_lags.py -v
+          python -m unittest discover -s tests -p test_water_food_conservation.py -v
       - name: Prepare public dashboard model reports
         run: |
           mkdir -p web/model
