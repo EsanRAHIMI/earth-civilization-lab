@@ -50,6 +50,12 @@ The **independent-time 2019–2023 exploratory holdout** selected persistence an
 
 [Complete source provenance, results and acceptance criteria](docs/SPATIAL_WATER_CROP_2026_EVIDENCE.md).
 
+## External Met Office temperature evaluation — 2026-10-16
+
+A separate HadCRUT5 v5.2 Met Office annual-temperature observational product was tested against the NASA/NOAA-trained physical model on the 2015–2024 held-out decade. A reference-period temperature offset was estimated only with <=2014 observations. MAE: physical model **0.19539 °C**, frozen-2014 **0.22824 °C**, and train-only linear trend **0.16745 °C**. **The physical model does not beat the trend and is not externally accepted.** Shared source observations and the previously examined historical test mean this is independent-institution cross-product evaluation, *not* independent confirmatory forecasting evidence.
+
+[External Met Office evaluation and precise data provenance](docs/HADCRUT5_EXTERNAL_TEMPERATURE_EVALUATION.md) · [Successful external-source CI run](https://github.com/EsanRAHIMI/earth-civilization-lab/actions/runs/38951863932)
+
 ## Documentation
 
 - [Scientific architecture, international methods and acceptance criteria](docs/EARTHLAB_RESEARCH_ARCHITECTURE_2026.md)
