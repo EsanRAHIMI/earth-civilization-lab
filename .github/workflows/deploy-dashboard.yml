@@ -38,10 +38,12 @@ jobs:
           test -s .earthlab-artifacts/reports/six_sector_conformal_coverage.json
           test -s .earthlab-artifacts/reports/scientific_data_lineage.json
           test -s .earthlab-artifacts/reports/sector_lagged_research.json
+          test -s .earthlab-artifacts/reports/scientific_release_gate.json
           cp .earthlab-artifacts/reports/six_sector_observed_holdout.json web/model/holdout.json
           cp .earthlab-artifacts/reports/six_sector_conformal_coverage.json web/model/uncertainty.json
           cp .earthlab-artifacts/reports/scientific_data_lineage.json web/model/data-lineage.json
           cp .earthlab-artifacts/reports/sector_lagged_research.json web/model/lagged-research.json
+          cp .earthlab-artifacts/reports/scientific_release_gate.json web/model/scientific-gate.json
           cp .earthlab-artifacts/reports/six_sector_robustness.json web/model/robustness.json
       - name: Configure Pages
         uses: actions/configure-pages@v5
