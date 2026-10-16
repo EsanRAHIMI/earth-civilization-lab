@@ -52,7 +52,7 @@ class BasinAnnualWaterBudget:
         consistent temporal support for two GRACE observations.
         """
         if not same_spatial_support:
-            raise ValueError("GRACE and flux integration supports not independently verified")
+            raise ValueError("GRACE and basin flux spatial integration supports not independently verified")
         nonnegative("combined_uncertainty_cm", combined_uncertainty_cm)
         for value in (begin_anomaly_cm, end_anomaly_cm):
             if not isinstance(value, (int, float)) or not math.isfinite(value):
