@@ -71,6 +71,14 @@ A pipeline green check means code and evidence-generation steps executed, *not* 
 
 2026-10-16: In a five-seed, two-time-window exploratory benchmark using actual observed historical WB values, the climate emissions proxy improved in 1/10 blocked evaluations, water withdrawals in 0/10 and food production index in 2/10; positive country-block lower confidence bound in 0/10 for each. All experimental historic vintages were visible during development. This justifies replacing the underlying physical-variable/data model rather than searching more hyperparameters for green indicators. These counts are not 10 statistically independent experiments.
 
+## 5a. Verified physical climate-data milestone (2026-10-16)
+
+The empirical workflow successfully aligned **45 exact common annual years (1980–2024)** of NASA GISTEMP v4 global surface-temperature anomaly (°C relative to 1951–1980), NOAA GML globally averaged atmospheric CO2 (ppm), and an ERA5-derived OWID World precipitation aggregation (mm/year, spatial land-only masking unverified). All three input files were hashed and no missing year was silently fabricated. These are **three different physical quantities**, not three independent observations of the same target; the upstream observation/assimilation lineage may overlap. The current precipitation pipeline does not archive all original upstream response bytes, so fully immutable reanalysis provenance remains incomplete.
+
+The existing two-layer temperature *conditional hindcast* (fit through 2014, evaluated against NASA 2015–2024) obtained **MAE 0.12561 °C**, versus **observed prior-year NASA persistence MAE 0.11700 °C** and **training-only linear trend MAE 0.17321 °C**. It does **not** beat persistence. Critically, the physical integration uses **measured test-year NOAA CO2**; it is not a blind future forecast. It omits non-CO2 greenhouse gases, aerosols, solar and volcanic forcing. These results block validation claims while identifying concrete physical-variable targets for rebuilding.
+
+The physical accounting code now encodes basin water mass conservation and crop harvest mass identities with explicit units, return flows, imports/exports, area conversion and fail-closed spatial-support checks. **Passing conservation identity unit tests is not evidence that basin or crop forecasts are calibrated.**
+
 ## 6. Strict immediate backlog and dependencies
 
 **P0 completed this cycle:** source-hash/data-contract audit, target-specific exactly observed t-1/t lags, country-and-time blocked folds, train-only standardization, common per-sector evaluation cohorts, country-block resampling, research reports in CI, public evidence table, deployment artifact path repair.
