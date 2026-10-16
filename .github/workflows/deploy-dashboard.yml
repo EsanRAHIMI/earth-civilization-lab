@@ -1,10 +1,5 @@
 name: Publish EarthLab Live Dashboard
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'web/**'
-      - '.github/workflows/deploy-dashboard.yml'
   workflow_run:
     workflows: ['Six-sector observed validation']
     types: [completed]
@@ -19,7 +14,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   deploy:
-    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -34,14 +29,20 @@ jobs:
           name: observed-six-sector-validation
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          path: web/model
+          path: .earthlab-artifacts
       - name: Normalize report filenames
         if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
         run: |
-          test -s web/model/six_sector_observed_holdout.json
-          test -s web/model/six_sector_conformal_coverage.json
-          mv web/model/six_sector_observed_holdout.json web/model/holdout.json
-          mv web/model/six_sector_conformal_coverage.json web/model/uncertainty.json
+          mkdir -p web/model
+          test -s .earthlab-artifacts/reports/six_sector_observed_holdout.json
+          test -s .earthlab-artifacts/reports/six_sector_conformal_coverage.json
+          test -s .earthlab-artifacts/reports/scientific_data_lineage.json
+          test -s .earthlab-artifacts/reports/sector_lagged_research.json
+          cp .earthlab-artifacts/reports/six_sector_observed_holdout.json web/model/holdout.json
+          cp .earthlab-artifacts/reports/six_sector_conformal_coverage.json web/model/uncertainty.json
+          cp .earthlab-artifacts/reports/scientific_data_lineage.json web/model/data-lineage.json
+          cp .earthlab-artifacts/reports/sector_lagged_research.json web/model/lagged-research.json
+          cp .earthlab-artifacts/reports/six_sector_robustness.json web/model/robustness.json
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Verify dashboard
