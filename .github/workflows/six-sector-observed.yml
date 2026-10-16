@@ -1,0 +1,38 @@
+name: Six-sector observed validation
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/six_sector_observed_hindcast.py'
+      - 'src/six_sector_conformal_coverage.py'
+      - 'src/observed_grid_pipeline.py'
+      - 'tests/test_six_sector_observed.py'
+      - '.github/workflows/six-sector-observed.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Download observed World Bank panel
+        run: python -m src.multisector
+      - name: Observed country-disjoint hindcast
+        run: python -m src.six_sector_observed_hindcast
+      - name: Country-disjoint uncertainty coverage
+        run: python -m src.six_sector_conformal_coverage
+      - name: Unit tests
+        run: python -m unittest discover -s tests -p test_six_sector_observed.py -v
+      - name: Upload validation reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: observed-six-sector-validation
+          path: |
+            reports/six_sector_observed_holdout.json
+            reports/six_sector_conformal_coverage.json
+          if-no-files-found: warn
