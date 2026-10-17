@@ -142,7 +142,7 @@ jobs:
           from pathlib import Path
           import re
           html=Path('web/index.html').read_text()
-          inline=re.findall(r'<script(?:\\s[^>]*)?>([\\s\\S]*?)</script>',html)
+          inline=re.findall(r'<script>(.*?)</script>',html,re.S)
           if not inline or not any('loadMissionControl' in script for script in inline):
               raise SystemExit('Missing executable science mission UI')
           Path('/tmp/earthlab-inline-script.js').write_text('\\n'.join(inline))
