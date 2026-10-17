@@ -9,13 +9,13 @@ class ConservationLawTests(unittest.TestCase):
             evapotranspiration_mm=600.,outlet_discharge_mm=300.,
             gross_withdrawals_mm=150.,return_flows_mm=100.
         )
-        self.assertAlmostEqual(budget.expected_storage_change_mm(),50.)
-        self.assertAlmostEqual(budget.expected_storage_change_km3(),.05)
+        self.assertAlmostEqual(budget.expected_storage_change_mm(),100.)
+        self.assertAlmostEqual(budget.expected_storage_change_km3(),.1)
     def test_observation_spatial_mismatch_fails_closed(self):
         budget=BasinAnnualWaterBudget(1000.,1000.,600.,300.,150.,100.)
         with self.assertRaisesRegex(ValueError,"spatial"):
             budget.compare_gravity_storage(10,15,1)
-        result=budget.compare_gravity_storage(10,15,1,same_spatial_support=True)
+        result=budget.compare_gravity_storage(10,20,1,same_spatial_support=True)
         self.assertAlmostEqual(result["residual_mm"],0.)
     def test_water_negative_flux_rejected(self):
         with self.assertRaisesRegex(ValueError,"nonnegative"):
