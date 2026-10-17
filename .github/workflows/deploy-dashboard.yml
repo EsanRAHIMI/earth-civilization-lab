@@ -1,8 +1,18 @@
 name: Publish EarthLab Live Dashboard
 on:
   workflow_run:
-    workflows: ['Six-sector observed validation']
+    workflows:
+      - 'Six-sector observed validation'
+      - 'Climate physical research'
+      - 'Spatial water and food research'
+      - 'Coupled climate water food operational verdict'
     types: [completed]
+  push:
+    branches: [main]
+    paths:
+      - 'web/**'
+      - 'src/build_dashboard_evidence.py'
+      - '.github/workflows/deploy-dashboard.yml'
   workflow_dispatch:
 permissions:
   contents: read
@@ -14,68 +24,125 @@ concurrency:
   cancel-in-progress: true
 jobs:
   deploy:
-    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout
+      - name: Checkout newest main
         uses: actions/checkout@v4
-      - name: Download validated model reports
-        if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
-        uses: actions/download-artifact@v4
         with:
-          name: observed-six-sector-validation
-          run-id: ${{ github.event.workflow_run.id }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          path: .earthlab-artifacts
-      - name: Normalize report filenames
-        if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
-        run: |
-          mkdir -p web/model
-          test -s .earthlab-artifacts/reports/six_sector_observed_holdout.json
-          test -s .earthlab-artifacts/reports/six_sector_conformal_coverage.json
-          test -s .earthlab-artifacts/reports/scientific_data_lineage.json
-          test -s .earthlab-artifacts/reports/sector_lagged_research.json
-          test -s .earthlab-artifacts/reports/scientific_release_gate.json
-          cp .earthlab-artifacts/reports/six_sector_observed_holdout.json web/model/holdout.json
-          cp .earthlab-artifacts/reports/six_sector_conformal_coverage.json web/model/uncertainty.json
-          cp .earthlab-artifacts/reports/scientific_data_lineage.json web/model/data-lineage.json
-          cp .earthlab-artifacts/reports/sector_lagged_research.json web/model/lagged-research.json
-          cp .earthlab-artifacts/reports/scientific_release_gate.json web/model/scientific-gate.json
-          cp .earthlab-artifacts/reports/six_sector_robustness.json web/model/robustness.json
-      - name: Resolve latest independently successful spatial data evidence
-        id: spatial
+          ref: main
+      - name: Locate verified-success source pipelines
+        id: reports
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          RUN_ID=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/spatial-water-food.yml/runs?status=success&per_page=1" --jq '.workflow_runs[0].id // empty')
-          echo "run_id=$RUN_ID" >> "$GITHUB_OUTPUT"
-      - name: Download independently generated spatial observation reports
-        if: steps.spatial.outputs.run_id != ''
+          set -euo pipefail
+          for item in "six_sector:six-sector-observed.yml" "climate_physics:climate-physical-research.yml" "spatial_crop:spatial-water-food.yml" "coupled_review:coupled-operational-verdict.yml"; do
+            key="${item%%:*}"
+            workflow="${item#*:}"
+            run_id=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/$workflow/runs?status=success&per_page=1" --jq '.workflow_runs[0].id // empty')
+            echo "${key}=${run_id}" >> "$GITHUB_OUTPUT"
+          done
+          test -n "$(grep '^six_sector=' "$GITHUB_OUTPUT" | cut -d= -f2)"
+      - name: Download six-sector versioned evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: observed-six-sector-validation
+          run-id: ${{ steps.reports.outputs.six_sector }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: .model-evidence
+      - name: Download NASA NOAA Met Office physical results
+        if: steps.reports.outputs.climate_physics != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: climate-physical-evidence
+          run-id: ${{ steps.reports.outputs.climate_physics }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: .climate-evidence
+      - name: Download observed NOAA FAO regional results
+        if: steps.reports.outputs.spatial_crop != ''
         uses: actions/download-artifact@v4
         with:
           name: actual-spatial-rainfall-provenance
-          run-id: ${{ steps.spatial.outputs.run_id }}
+          run-id: ${{ steps.reports.outputs.spatial_crop }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          path: .spatial-research
-      - name: Publish spatial research as distinct and non-forecast observation evidence
-        if: steps.spatial.outputs.run_id != ''
+          path: .spatial-evidence
+      - name: Download independent coupled release decision
+        if: steps.reports.outputs.coupled_review != ''
+        uses: actions/download-artifact@v4
+        with:
+          name: coupled-global-release-verdict
+          run-id: ${{ steps.reports.outputs.coupled_review }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: .joint-evidence
+      - name: Publish exact immutable research artifacts and classify missing data
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          test -s .spatial-research/reports/gpcp_spatial_precipitation.json
-          test -s .spatial-research/reports/faostat_wheat_country_observations.json
-          test -s .spatial-research/reports/country_aligned_wheat_rain_benchmark.json
-          cp .spatial-research/reports/gpcp_spatial_precipitation.json web/model/gpcp-rainfall.json
-          cp .spatial-research/reports/faostat_wheat_country_observations.json web/model/faostat-wheat.json
-          cp .spatial-research/reports/country_aligned_wheat_rain_benchmark.json web/model/wheat-rain-research.json
+          set -euo pipefail
+          mkdir -p web/model
+          test -s .model-evidence/reports/six_sector_observed_holdout.json
+          test -s .model-evidence/reports/six_sector_conformal_coverage.json
+          test -s .model-evidence/reports/scientific_data_lineage.json
+          test -s .model-evidence/reports/sector_lagged_research.json
+          test -s .model-evidence/reports/scientific_release_gate.json
+          cp .model-evidence/reports/six_sector_observed_holdout.json web/model/holdout.json
+          cp .model-evidence/reports/six_sector_conformal_coverage.json web/model/uncertainty.json
+          cp .model-evidence/reports/scientific_data_lineage.json web/model/data-lineage.json
+          cp .model-evidence/reports/sector_lagged_research.json web/model/lagged-research.json
+          cp .model-evidence/reports/scientific_release_gate.json web/model/scientific-gate.json
+          cp .model-evidence/reports/six_sector_robustness.json web/model/robustness.json
+          if test -s .climate-evidence/reports/hadcrut5_independent_climate_test.json; then
+            cp .climate-evidence/reports/hadcrut5_independent_climate_test.json web/model/climate-external.json
+          fi
+          if test -s .climate-evidence/reports/climate_joint_temperature_ocean_hindcast.json; then
+            cp .climate-evidence/reports/climate_joint_temperature_ocean_hindcast.json web/model/climate-ocean.json
+          fi
+          if test -s .spatial-evidence/reports/gpcp_spatial_precipitation.json; then
+            cp .spatial-evidence/reports/gpcp_spatial_precipitation.json web/model/gpcp-rainfall.json
+          fi
+          if test -s .spatial-evidence/reports/faostat_wheat_country_observations.json; then
+            cp .spatial-evidence/reports/faostat_wheat_country_observations.json web/model/faostat-wheat.json
+          fi
+          if test -s .spatial-evidence/reports/country_aligned_wheat_rain_benchmark.json; then
+            cp .spatial-evidence/reports/country_aligned_wheat_rain_benchmark.json web/model/wheat-rain-research.json
+          fi
+          if test -s .spatial-evidence/reports/country_wheat_no_future_weather_audit.json; then
+            cp .spatial-evidence/reports/country_wheat_no_future_weather_audit.json web/model/wheat-issue-audit.json
+          fi
+          if test -s .joint-evidence/reports/coupled_operational_verdict.json; then
+            cp .joint-evidence/reports/coupled_operational_verdict.json web/model/coupled-verdict.json
+          fi
+          gh api "repos/$GITHUB_REPOSITORY/actions/runs?per_page=100" > /tmp/earthlab-runs.json
+          python - <<'PY'
+          import datetime,json,pathlib
+          data=json.loads(pathlib.Path('/tmp/earthlab-runs.json').read_text())['workflow_runs']
+          matched={}
+          names={
+           'six_sector':'Six-sector observed validation',
+           'climate_physics':'Climate physical research',
+           'spatial_crop':'Spatial water and food research',
+           'coupled_review':'Coupled climate water food operational verdict',
+           'grace':'NASA GRACE protected physical water data'}
+          for key,name in names.items():
+           found=next((x for x in data if x.get('name')==name),None)
+           matched[key]=({p:found.get(p) for p in ('id','status','conclusion','updated_at','html_url','head_sha')}
+                         if found else {'status':'unavailable','conclusion':None,'updated_at':None,'html_url':None})
+          pathlib.Path('web/model/pipeline-runs.json').write_text(json.dumps(matched,indent=2))
+          PY
+          python -m src.build_dashboard_evidence web/model
       - name: Configure Pages
         uses: actions/configure-pages@v5
-      - name: Verify dashboard
+      - name: Verify public evidence and app
         run: |
           test -s web/index.html
+          test -s web/model/evidence-index.json
+          test -s web/model/pipeline-runs.json
           grep -q 'EARTH CIVILIZATION LAB' web/index.html
-      - name: Upload dashboard
+      - name: Upload Pages output
         uses: actions/upload-pages-artifact@v4
         with:
           path: web
