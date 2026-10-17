@@ -80,13 +80,13 @@ def study(rows):
         baseline=lambda row:row[2]
         selected=mae(test,final)
         persistent=mae(test,baseline)
-        fold.update(status="exploratory_geographic_temporal_holdout",
+        fold.update({"status":"exploratory_geographic_temporal_holdout",
                     "predictor":best[1],"regularization":best[2],
                     "test_mae_t_ha":selected,"persistence_mae_t_ha":persistent,
                     "improvement_t_ha":persistent-selected,
                     "beats_persistence":selected<persistent-1e-8,
                     "accepted":False,
-                    "limitations":"One held nation and five historical harvest years; not independent prospective trial")
+                    "limitations":"One held nation and five historical harvest years; not independent prospective trial"})
         folds.append(fold)
     return folds
 
