@@ -17,6 +17,7 @@ on:
       - '.github/workflows/spatial-water-food.yml'
 permissions:
   contents: read
+  actions: read
 jobs:
   spatial_evidence:
     runs-on: ubuntu-latest
@@ -35,6 +36,18 @@ jobs:
           python -m unittest discover -s tests -p test_faostat_crop_source.py -v
           python -m unittest discover -s tests -p test_country_aligned_wheat_rain.py -v
           python -m unittest discover -s tests -p test_wheat_no_future_weather_audit.py -v
+      - name: Restore immutable, SHA-verifiable NOAA source archive after upstream 503
+        uses: actions/download-artifact@v4
+        with:
+          name: actual-spatial-rainfall-provenance
+          run-id: 38950921593
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: .verified-reference-archive
+      - name: Validate historical source bytes before use
+        run: |
+          mkdir -p data/independent_raw
+          cp .verified-reference-archive/data/independent_raw/noaa_gpcp_v23_monthly.nc data/independent_raw/noaa_gpcp_v23_monthly.nc
+          echo "d31c53ab8180a883bd01442212948c3db4372d481b94a90e69d3d86bb65d7f68  data/independent_raw/noaa_gpcp_v23_monthly.nc" | sha256sum -c -
       - name: Download genuine NOAA GPCP rainfall and aggregate audited rectangles
         run: python -m src.gpcp_spatial_precipitation
       - name: Acquire real FAOSTAT QCL wheat yield and harvested area with exact units
