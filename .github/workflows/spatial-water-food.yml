@@ -8,6 +8,8 @@ on:
       - 'src/gpcp_spatial_precipitation.py'
       - 'src/faostat_crop_source.py'
       - 'src/country_aligned_wheat_rain_benchmark.py'
+      - 'src/wheat_no_future_weather_audit.py'
+      - 'tests/test_wheat_no_future_weather_audit.py'
       - 'tests/test_country_aligned_wheat_rain.py'
       - 'tests/test_faostat_crop_source.py'
       - 'tests/test_spatial_water_crop_operator.py'
@@ -32,12 +34,15 @@ jobs:
           python -m unittest discover -s tests -p test_gpcp_spatial_precipitation.py -v
           python -m unittest discover -s tests -p test_faostat_crop_source.py -v
           python -m unittest discover -s tests -p test_country_aligned_wheat_rain.py -v
+          python -m unittest discover -s tests -p test_wheat_no_future_weather_audit.py -v
       - name: Download genuine NOAA GPCP rainfall and aggregate audited rectangles
         run: python -m src.gpcp_spatial_precipitation
       - name: Acquire real FAOSTAT QCL wheat yield and harvested area with exact units
         run: python -m src.faostat_crop_source
       - name: Align genuine country polygons with satellite rain and FAOSTAT yields
         run: python -m src.country_aligned_wheat_rain_benchmark
+      - name: Audit actual wheat harvest forecast issue-time and held-country future-year skill
+        run: python -m src.wheat_no_future_weather_audit
       - name: Publish original gridded source and actual observations
         if: always()
         uses: actions/upload-artifact@v4
@@ -52,3 +57,4 @@ jobs:
             data/independent_raw/faostat_qcl_original.zip
             data/independent_raw/naturalearth_country_polygons_110m.geojson
             reports/country_aligned_wheat_rain_benchmark.json
+            reports/country_wheat_no_future_weather_audit.json
