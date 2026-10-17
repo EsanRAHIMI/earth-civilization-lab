@@ -58,6 +58,7 @@ jobs:
           name: climate-physical-evidence
           path: |
             reports/climate_*json
+            reports/hadcrut5_independent_climate_test.json
             data/independent_raw/noaa_aggi_annual_ghg_forcing.csv
             data/independent_raw/igcc_2024_annual_erf_best.csv
             data/independent_raw/ocean_heat_content_annual.csv
