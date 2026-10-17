@@ -10,7 +10,6 @@ country-level rainfall is not a wheat growing-area forcing. No crop physics
 or GRACE terrestrial water-storage target is trained.
 """
 import hashlib,json,math,pathlib,statistics
-import numpy as np
 from src.country_aligned_wheat_rain_benchmark import benchmark as retrospective_benchmark
 
 TRAIN_END=2016
@@ -37,6 +36,7 @@ def form_rows(observed):
     return rows
 
 def fit_ridge(rows,with_rain,alpha):
+    import numpy as np
     if len(rows)<8:raise ValueError("Too few physically joined calibration rows")
     rainavg=statistics.mean(row[3] for row in rows)
     rainstd=statistics.pstdev(row[3] for row in rows) or 1.
