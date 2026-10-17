@@ -1,0 +1,57 @@
+name: Coupled climate water food operational verdict
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/coupled_operational_verdict.py'
+      - 'tests/test_coupled_operational_verdict.py'
+      - '.github/workflows/coupled-operational-verdict.yml'
+permissions:
+  contents: read
+  actions: read
+jobs:
+  independent_cross_domain_review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Retrieve successful physical NASA Met Office NOAA experiment
+        uses: actions/download-artifact@v4
+        with:
+          name: climate-physical-evidence
+          run-id: 38951863932
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: .climate-evidence
+      - name: Retrieve completed geographic and future-year blocked crop audit
+        uses: actions/download-artifact@v4
+        with:
+          name: actual-spatial-rainfall-provenance
+          run-id: 39023101657
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: .spatial-evidence
+      - name: Confirm immutable report origin and prepare cross-domain evidence
+        run: |
+          mkdir -p evidence
+          test -s .climate-evidence/reports/hadcrut5_independent_climate_test.json
+          test -s .climate-evidence/reports/climate_joint_temperature_ocean_hindcast.json
+          test -s .spatial-evidence/reports/country_wheat_no_future_weather_audit.json
+          cp .climate-evidence/reports/hadcrut5_independent_climate_test.json evidence/
+          cp .climate-evidence/reports/climate_joint_temperature_ocean_hindcast.json evidence/
+          cp .spatial-evidence/reports/country_wheat_no_future_weather_audit.json evidence/
+      - name: Cross-domain physical climate water crop operational release verdict
+        run: python -m src.coupled_operational_verdict
+      - name: Validate absolute fail-closed release policy
+        run: python -m unittest discover -s tests -p test_coupled_operational_verdict.py -v
+      - name: Archive full inspectable linked evidence and verdict
+        uses: actions/upload-artifact@v4
+        with:
+          name: coupled-global-release-verdict
+          retention-days: 90
+          if-no-files-found: error
+          path: |
+            evidence/*.json
+            reports/coupled_operational_verdict.json
