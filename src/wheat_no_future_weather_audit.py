@@ -36,7 +36,7 @@ def form_rows(observed):
     return rows
 
 def fit_ridge(rows,with_rain,alpha):
-    import numpy as np
+    from src.historical_calibration import solve
     if len(rows)<8:raise ValueError("Too few physically joined calibration rows")
     rainavg=statistics.mean(row[3] for row in rows)
     rainstd=statistics.pstdev(row[3] for row in rows) or 1.
@@ -44,12 +44,17 @@ def fit_ridge(rows,with_rain,alpha):
         values=[1.,row[2]]
         if with_rain:values.append((row[3]-rainavg)/rainstd)
         return values
-    X=np.array([design(r) for r in rows],dtype=float)
-    y=np.array([r[4] for r in rows],dtype=float)
-    penalty=np.eye(X.shape[1])*alpha
-    penalty[0,0]=0.
-    beta=np.linalg.solve(X.T@X+penalty,X.T@y)
-    return lambda row:max(0.,float(np.dot(design(row),beta)))
+    width=3 if with_rain else 2
+    xtx=[[0. for _ in range(width)] for _ in range(width)]
+    xty=[0.]*width
+    for row in rows:
+        x=design(row)
+        for i in range(width):
+            xty[i]+=x[i]*row[4]
+            for j in range(width):xtx[i][j]+=x[i]*x[j]
+    for i in range(1,width):xtx[i][i]+=alpha
+    coefficients=solve(xtx,xty)
+    return lambda row:max(0.,sum(a*b for a,b in zip(design(row),coefficients)))
 
 def mae(rows,predict):
     return statistics.mean(abs(r[4]-predict(r)) for r in rows)
