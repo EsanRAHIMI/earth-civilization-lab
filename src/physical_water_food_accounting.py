@@ -15,10 +15,10 @@ def nonnegative(name, value):
 class BasinAnnualWaterBudget:
     """All water depths in mm over exactly the same basin polygon/year.
 
-    Withdrawal is gross removal within the basin and must exclude water
-    already counted in the external runoff boundary flux; imports/exports
-    and return flows are explicit. A GRACE water-storage anomaly is NOT an
-    absolute reservoir volume or an observed human withdrawal.
+    INTERNAL withdrawals and returns may transfer between reservoir types,
+    but must NOT be counted in whole-basin water storage closure. This module
+    explicitly retains old fields for backward compatibility and checks their
+    net balance separately. Imports/exports must cross basin boundaries.
     """
     basin_area_km2: float
     precipitation_mm: float
@@ -38,8 +38,11 @@ class BasinAnnualWaterBudget:
     def expected_storage_change_mm(self):
         return (self.precipitation_mm + self.return_flows_mm
                 + self.external_imports_mm - self.evapotranspiration_mm
-                - self.outlet_discharge_mm - self.gross_withdrawals_mm
-                - self.external_exports_mm)
+                - self.outlet_discharge_mm - self.external_exports_mm)
+
+    def internal_net_abstraction_mm(self):
+        """Diagnostic internal water use only, never a total-basin boundary flux."""
+        return self.gross_withdrawals_mm - self.return_flows_mm
 
     def expected_storage_change_km3(self):
         return self.expected_storage_change_mm() * self.basin_area_km2 / 1000000.
