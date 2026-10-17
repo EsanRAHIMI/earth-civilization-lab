@@ -12,6 +12,7 @@ on:
     paths:
       - 'web/**'
       - 'src/build_dashboard_evidence.py'
+      - 'tests/test_dashboard_evidence_manifest.py'
       - '.github/workflows/deploy-dashboard.yml'
   workflow_dispatch:
 permissions:
@@ -134,6 +135,19 @@ jobs:
           pathlib.Path('web/model/pipeline-runs.json').write_text(json.dumps(matched,indent=2))
           PY
           python -m src.build_dashboard_evidence web/model
+      - name: Verify scientific evidence schema and browser JavaScript syntax
+        run: |
+          python -m unittest discover -s tests -p test_dashboard_evidence_manifest.py -v
+          python - <<'PY'
+          from pathlib import Path
+          import re
+          html=Path('web/index.html').read_text()
+          inline=re.findall(r'<script(?:\\s[^>]*)?>([\\s\\S]*?)</script>',html)
+          if not inline or not any('loadMissionControl' in script for script in inline):
+              raise SystemExit('Missing executable science mission UI')
+          Path('/tmp/earthlab-inline-script.js').write_text('\\n'.join(inline))
+          PY
+          node --check /tmp/earthlab-inline-script.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Verify public evidence and app
