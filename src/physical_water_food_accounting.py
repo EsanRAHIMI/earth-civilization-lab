@@ -36,8 +36,7 @@ class BasinAnnualWaterBudget:
             raise ValueError("Basin polygon area must be positive")
 
     def expected_storage_change_mm(self):
-        return (self.precipitation_mm + self.return_flows_mm
-                + self.external_imports_mm - self.evapotranspiration_mm
+        return (self.precipitation_mm + self.external_imports_mm - self.evapotranspiration_mm
                 - self.outlet_discharge_mm - self.external_exports_mm)
 
     def internal_net_abstraction_mm(self):
