@@ -69,39 +69,45 @@ def run(root="."):
  output=root/"data/independent_raw"
  output.mkdir(parents=True,exist_ok=True)
  path=output/"noaa_gpcp_v23_monthly.nc"
- # NOAA THREDDS large HTTP transfers are occasionally truncated by the server.
- # Download independently verified HTTP 206 byte ranges, never a partial file.
- head=urllib.request.Request(SOURCE,method="HEAD",headers={"User-Agent":"EarthCivilizationLab scientific-data-review"})
- with urllib.request.urlopen(head,timeout=60) as info:
-  total=int(info.headers.get("Content-Length","0"))
- if not(1000000<total<200000000):raise ValueError("Invalid NOAA source length")
- block=2*1024*1024
- buffers=[]
- for begin in range(0,total,block):
-  finish=min(begin+block,total)-1
-  part=None
-  for attempt in range(5):
-   try:
-    request=urllib.request.Request(SOURCE,headers={
-     "Range":f"bytes={begin}-{finish}",
-     "User-Agent":"EarthCivilizationLab scientific-data-review"})
-    with urllib.request.urlopen(request,timeout=90) as response:
-     status=response.status
-     content_range=response.headers.get("Content-Range","")
-     fragment=response.read()
-    if status!=206 or not content_range.startswith(f"bytes {begin}-{finish}/{total}"):
-     raise ValueError("NOAA server refused precise HTTP range")
-    if len(fragment)!=finish-begin+1:raise IOError("Truncated NOAA range")
-    part=fragment
-    break
-   except (http.client.IncompleteRead,urllib.error.URLError,TimeoutError,ConnectionError,IOError):
-    if attempt==4:raise
-    time.sleep(min(2**attempt,8))
-  if part is None:raise RuntimeError("NOAA range unavailable")
-  buffers.append(part)
- payload=b"".join(buffers)
- if len(payload)!=total:raise ValueError("NOAA byte-range source length mismatch")
- path.write_bytes(payload)
+ pinned_sha="d31c53ab8180a883bd01442212948c3db4372d481b94a90e69d3d86bb65d7f68"
+ reused_pinned=path.is_file() and hashlib.sha256(path.read_bytes()).hexdigest()==pinned_sha
+ if reused_pinned:
+  payload=path.read_bytes()
+ else:
+  # NOAA THREDDS large HTTP transfers are occasionally truncated by the server.
+  # Download independently verified HTTP 206 byte ranges, never a partial file.
+  head=urllib.request.Request(SOURCE,method="HEAD",headers={"User-Agent":"EarthCivilizationLab scientific-data-review"})
+  with urllib.request.urlopen(head,timeout=60) as info:
+   total=int(info.headers.get("Content-Length","0"))
+  if not(1000000<total<200000000):raise ValueError("Invalid NOAA source length")
+  block=2*1024*1024
+  buffers=[]
+  for begin in range(0,total,block):
+   finish=min(begin+block,total)-1
+   part=None
+   for attempt in range(5):
+    try:
+     request=urllib.request.Request(SOURCE,headers={
+      "Range":f"bytes={begin}-{finish}",
+      "User-Agent":"EarthCivilizationLab scientific-data-review"})
+     with urllib.request.urlopen(request,timeout=90) as response:
+      status=response.status
+      content_range=response.headers.get("Content-Range","")
+      fragment=response.read()
+     if status!=206 or not content_range.startswith(f"bytes {begin}-{finish}/{total}"):
+      raise ValueError("NOAA server refused precise HTTP range")
+     if len(fragment)!=finish-begin+1:raise IOError("Truncated NOAA range")
+     part=fragment
+     break
+    except (http.client.IncompleteRead,urllib.error.URLError,TimeoutError,ConnectionError,IOError):
+     if attempt==4:raise
+     time.sleep(min(2**attempt,8))
+   if part is None:raise RuntimeError("NOAA range unavailable")
+   buffers.append(part)
+  payload=b"".join(buffers)
+  if len(payload)!=total:raise ValueError("NOAA byte-range source length mismatch")
+  path.write_bytes(payload)
+
  with netCDF4.Dataset(path) as nc:
   observed={name:decode_region(nc,box,*PERIOD) for name,box in REGIONS.items()}
  report={"status":"real_satellite_gauge_gpcp_rainfall_ingested",
@@ -109,6 +115,8 @@ def run(root="."):
          "url":SOURCE,"product":"NOAA PSL GPCP v2.3 merged satellite/gauge",
          "doi":"10.7289/V56971M6",
          "input_sha256":hashlib.sha256(payload).hexdigest(),"bytes":len(payload),
+         "historical_source_snapshot_reused":reused_pinned,
+         "original_source_snapshot_date_utc":"2026-10-16" if reused_pinned else None,
          "regions":{name:{"bbox":REGIONS[name],**details,
                      "records":{str(year):round(v,4) for year,v in annual.items()}}
                     for name,(annual,details) in observed.items()},
