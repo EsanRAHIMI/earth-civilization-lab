@@ -1,0 +1,35 @@
+# Python caches and local environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage*
+htmlcov/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+*.egg-info/
+dist/
+build/
+# Editors and credentials
+.DS_Store
+.idea/
+.vscode/
+.netrc
+*.pem
+*.key
+# Downloaded scientific sources / generated reports (never commit generated binaries)
+data/independent_raw/
+data/multisector_raw/
+data/*_raw/
+data/*_download/
+reports/
+web/model/
+*.nc
+*.nc4
+*.tif
+*.tiff
+*.zarr/
