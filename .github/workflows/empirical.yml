@@ -3,6 +3,14 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+    paths:
+      - 'src/pipeline.py'
+      - 'src/validate.py'
+      - 'src/physical_core.py'
+      - 'src/sector_lagged_research.py'
+      - 'src/empirical_benchmarks.py'
+      - 'tests/**'
+      - '.github/workflows/empirical.yml'
   schedule:
     - cron: '17 3 1 * *'
 permissions:
