@@ -1,86 +1,101 @@
 # Earth Civilization Lab
 
-An open, research-stage effort toward reproducible and eventually interoperable Earth–human-system observations, benchmarks and simulation. **This project is NOT a validated global digital twin, physically accepted Earth-system model, real-time planetary census, or scientifically trustworthy 1000-year forecast.**
+**Open research infrastructure for reproducible planetary observations, scientific benchmarking, and experimental Earth–society modelling.**
 
-## What actually works today
+[![Offline research CI](https://github.com/EsanRAHIMI/earth-civilization-lab/actions/workflows/research-quality.yml/badge.svg)](https://github.com/EsanRAHIMI/earth-civilization-lab/actions/workflows/research-quality.yml)
+[![Climate experiments](https://github.com/EsanRAHIMI/earth-civilization-lab/actions/workflows/climate-physical-research.yml/badge.svg)](https://github.com/EsanRAHIMI/earth-civilization-lab/actions/workflows/climate-physical-research.yml)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
+[![Cite this research software](https://img.shields.io/badge/Cite-CITATION.cff-informational)](CITATION.cff)
 
-- Public observation interface for selected USGS earthquakes, NASA EONET catalogue and location-specific Open-Meteo weather (these feeds have delays and incomplete coverage).
-- Historical World Bank country-year observations and narrow statistical one-step hindcasts, with explicit persistence comparisons.
-- Source-byte SHA-256 integrity, unit checks and upstream lineage for the World Bank panel.
-- Research-only sector-specific models for emissions, freshwater withdrawals and food production index, using exact annual lagged values and country/time-blocked backtests across five fixed country seeds and two temporal windows.
-- Country-block bootstrap comparisons, separate conformal interval study and explicit scientific limitation labels.
-- CI-published reports with raw retrieval snapshots and manifest; no fabricated missing observations.
+**[Explore the live observatory](https://esanrahimi.github.io/earth-civilization-lab/)** · **[Reproduce experiments](docs/REPRODUCIBILITY.md)** · **[Research roadmap](docs/RESEARCH_ROADMAP.md)** · **[Contribute](CONTRIBUTING.md)** · **[Scientific readiness](docs/OPERABILITY_DECISION_2026-10-17.md)**
 
-## What has **not** been demonstrated
+> **Scientific disclosure:** This is **not a validated global digital twin** or a dependable climate, water or food forecasting system. Data feeds are partial observations; most predictive experiments are exploratory historical hindcasts. We publish negative outcomes and reject claims of scientific skill without independent evidence.
 
-Independent physical climate, freshwater-storage or crop-yield forecast skill; meaningful causal sector interactions; cross-sector conservation; global spatial rasters linked to a validated simulator; free-running multi-year predictability; independently replicated results; scientific peer review; or operational decision reliability. World Bank food/water data inherit upstream FAO sources and are not validated by re-downloading the same upstream estimates.
+## Why this project exists
 
-### The current negative result is scientifically important
+Climate, freshwater, food systems, energy, population and economies interact across scales, but their datasets and evaluation practices are scattered. Earth Civilization Lab aims to provide an **inspectable and extensible research environment** that separates raw observations, tested models and hypothetical scenarios while preserving data lineage, physical units, uncertainty, and reproducibility.
 
-In a 2026-10-16 exploratory country-and-time blocked experiment (5 fixed country splits × 2 temporal origins for each target), positive held-out improvement against persistence occurred for emissions in **1/10**, withdrawals in **0/10** and food index in **2/10** splits. Country-block bootstrap lower improvement bounds were positive in **0/10** for each target. Repeated splits are correlated and historical source vintages have already been inspected during development. The results do **not** establish new scientific predictive skill.
+The project is an invitation for researchers to challenge assumptions and improve models—not a claim that the Earth is already accurately simulated.
 
-## Independent physical climate research benchmark (16 Oct 2026)
+## What you can inspect today
 
-A separately reproducible [climate physics research workflow](.github/workflows/climate-physical-research.yml) now retrieves the actual NASA GISTEMP global temperature observations, NOAA GML global annual atmospheric CO2, NOAA AGGI radiative forcing from all long-lived greenhouse gases and the pinned IGCC 2024 global effective radiative-forcing archive (tag v2025.06.11; includes anthropogenic aerosol, solar and volcanic components). Source bytes and SHA-256 hashes are included in a CI artifact.
+| Layer | Inputs / methods | Scientific interpretation |
+| --- | --- | --- |
+| **Planetary observatory** | USGS earthquake feeds, NASA EONET event catalogue, Open-Meteo weather | Public live-*retrieved* feeds, with upstream measurement delays and incomplete coverage |
+| **Six-sector observational benchmarks** | World Bank historical indicators, withheld-country and period evaluations | One-step predictive associations, not causal physical couplings |
+| **Climate physics** | NASA GISTEMP, NOAA CO₂ and ocean heat, IGCC radiative forcing, Met Office HadCRUT5 | Two-layer energy balance; historical decade tests do not beat strongest temperature trend baseline |
+| **Hydrology research** | NOAA GPCP gridded precipitation, basin accounting checks; NASA GRACE ingestion workflow | GRACE spatial corrections and independent basin-water validation still missing |
+| **Agriculture research** | FAOSTAT wheat yield/harvested area, NOAA precipitation, country polygon clipping | Valid observed crop records; cross-country crop forecasts not robust |
+| **Scientific release gates** | Provenance checks, no-future-leakage tests, blocked regional/time splits, machine-readable verdict | Only observational and exploratory outputs are authorized |
 
-All three two-layer physical models calibrate through 2014 and simulate 2015-2024 **without feeding observed future atmospheric concentration, forcing or temperature into the forecast**. MAE on the ten-year interval: CO2-only **0.2510 °C**, NOAA AGGI **0.2506 °C**, IGCC total forcing **0.2195 °C**, frozen-2014 baseline **0.2340 °C**, training-only historical linear temperature trend **0.1732 °C**. The IGCC experiment improves over the former physically incomplete CO2-only model, but **still fails to beat the linear-trend baseline**. The 2015-2024 historical holdout is exploratory, not a new sealed prospective experiment, and forcing from a retrospective 2025 product is not an as-of-2014 vintage.
+### Representative published **negative** results
 
-Full physical formulation, data DOIs, fixed experimental configuration and exclusions: [Climate frozen-2014 experiment](docs/CLIMATE_2014_FROZEN_PHYSICAL_BENCHMARK.md). Successful [empirical CI](https://github.com/EsanRAHIMI/earth-civilization-lab/actions/runs/38909576456) publishes raw data and all three backtests; the scientific release gate **remains blocked**.
+- Global temperature, external Met Office HadCRUT5 evaluation for 2015–2024: physical model MAE **0.1954 °C** vs a training-only linear trend **0.1674 °C**. No accepted temperature forecast skill.
+- Out-of-country wheat-yield experiments with pre-issue-date covariates: improvements in only **1 of 3** geography-blocked historical folds; no demonstrated transferable crop forecasting.
+- Hydrology: basin-level GRACE/GRACE-FO storage assimilation and independent discharge skill **not yet demonstrated**.
+- Cross-sector global operational release: **blocked** by missing physics, independent data and genuinely new confirmatory evaluation.
 
-## Joint atmosphere–ocean heat experiment (2026-10-16)
+These are *historical exploratory assessments* on already inspected public data, not previously unseen prospective trials. [Read the evidence and operational verdict](docs/OPERABILITY_DECISION_2026-10-17.md).
 
-The reproducible [physical climate workflow](https://github.com/EsanRAHIMI/earth-civilization-lab/actions/runs/38910826522) additionally downloads **real NOAA NCEI annual 0–700m and 0–2000m World Ocean heat-content records** (no repository fallback used in this execution), simultaneously fits a two-layer global energy balance against NASA surface-temperature anomalies (1980–2014) and NOAA 0–2000m ocean heat (2005–2014), and **free-runs the ten-year 2015–2024 test** without observing test-year atmospheric forcing, surface temperature or ocean heat during fitting or projection.
+## Architecture
 
-| 2015–2024 MAE | Fitted joint physics | Frozen 2014 | Train-only trend |
-| --- | ---: | ---: | ---: |
-| NASA global surface temperature (°C) | 0.2011 | 0.2340 | **0.1732** |
-| NOAA 0–2000m ocean-heat anomaly (ZJ) | **6.00** | 55.72 | 14.49 |
-
-The improvement in effective ocean heat is meaningful as a *historical benchmark*, not scientific validation. The two-layer heat state is **not geometrically or physically identical to the observed 0–2000m ocean inventory**, and an effective ocean-storage conversion fraction is inferred on a very short **10-year NOAA training sequence**. This parameter is not physically identified, with no joint full-depth heat closure, no independent uncertainty calibration, and a retrospectively revised forcing archive. The NASA temperature forecast still loses to the training-only trend. Thus deployment/decision scenarios **remain BLOCKED**.
-
-A separate unit/integration test **changes observed NOAA heat labels from 2015 onward by +10,000 ZJ**, and verifies that fit parameters and predicted temperature/ocean-heat curves remain *bit-for-bit identical*. That test passed in the same CI run.
-
-[Model source](src/climate_joint_temperature_ocean.py) · [No-leakage integration test](tests/test_climate_joint_observed_holdout_leakage.py) · [Run and raw evidence artifact](https://github.com/EsanRAHIMI/earth-civilization-lab/actions/runs/38910826522)
-
-## First gridded water/crop observational benchmark (2026-10-16)
-
-A new [spatial water-and-food CI](https://github.com/EsanRAHIMI/earth-civilization-lab/actions/runs/38950921593) actually ingests official NOAA GPCP satellite/gauge precipitation NetCDF (2005–2023), preserves full source SHA and units, extracts official FAOSTAT wheat crop-specific yield/harvested area/production (with quality flags) and overlays Natural Earth country polygons using geodesic clipping of each 2.5° pixel. This yields complete national-coverage rain/yield observational pairs for India, Pakistan and the USA, not arbitrary rectangle averages.
-
-The **independent-time 2019–2023 exploratory holdout** selected persistence and produced exactly **0.12922 t/ha MAE**, equal to the same-sample persistence baseline. A national annual precipitation covariate **did not demonstrate better crop-yield prediction**. This does not establish crop-field spatial validation or a preseason forecast. GRACE water storage, watershed outlet discharge and crop-specific cropland masks remain missing.
-
-[Complete source provenance, results and acceptance criteria](docs/SPATIAL_WATER_CROP_2026_EVIDENCE.md).
-
-## External Met Office temperature evaluation — 2026-10-16
-
-A separate HadCRUT5 v5.2 Met Office annual-temperature observational product was tested against the NASA/NOAA-trained physical model on the 2015–2024 held-out decade. A reference-period temperature offset was estimated only with <=2014 observations. MAE: physical model **0.19539 °C**, frozen-2014 **0.22824 °C**, and train-only linear trend **0.16745 °C**. **The physical model does not beat the trend and is not externally accepted.** Shared source observations and the previously examined historical test mean this is independent-institution cross-product evaluation, *not* independent confirmatory forecasting evidence.
-
-[External Met Office evaluation and precise data provenance](docs/HADCRUT5_EXTERNAL_TEMPERATURE_EVALUATION.md) · [Successful external-source CI run](https://github.com/EsanRAHIMI/earth-civilization-lab/actions/runs/38951863932)
-
-## Documentation
-
-- [Scientific architecture, international methods and acceptance criteria](docs/EARTHLAB_RESEARCH_ARCHITECTURE_2026.md)
-- [Prior scientific protocol and its limits](docs/SCIENTIFIC_PROTOCOL.md)
-- [Independent carbon-stock acquisition blockers](docs/carbon_stock_observation_acquisition.md)
-- [Research evidence workflow](.github/workflows/six-sector-observed.yml)
-- [Public observational dashboard](https://esanrahimi.github.io/earth-civilization-lab/)
-
-## Reproduce
-
-Python 3.11+ and network access to authoritative sources are required. No model result should be cited without its source-vintage hash and CI run.
-
-```bash
-python -m src.multisector
-python -m src.science_data_audit
-python -m src.six_sector_observed_hindcast
-python -m src.sector_lagged_research
-python -m src.six_sector_conformal_coverage
-python -m unittest discover -s tests -p 'test_science_data_and_lags.py' -v
+```text
+PUBLIC + SCIENTIFIC INPUTS
+ USGS / NASA / NOAA / Met Office / FAOSTAT / World Bank
+                 |
+                 v
+  SOURCE ADAPTERS + PROVENANCE
+ original bytes · SHA-256 · units · version · spatial/temporal support
+                 |
+          +------+------+
+          |             |
+          v             v
+ OBSERVATION UI     RESEARCH ENGINES
+ live feed status   physical / statistical models
+          |             |
+          |     blocked time + region test
+          |             |
+          +------+------+
+                 v
+       SCIENTIFIC EVIDENCE STORE
+ holdout metrics · uncertainty · negative results · release gates
+                 |
+                 v
+     PUBLIC RESEARCH DASHBOARD
+ clear separation: observed ≠ modelled ≠ validated
 ```
 
-The source audit verifies immutable raw retrieval bytes against a manifest and rejects schema or unit mismatches. The lagged sector evaluation exports `reports/sector_lagged_research.json` and **sets evidence_accepted=false by design**, because confirmatory independent/vintage-out evidence remains missing.
+Implementation is intentionally research-oriented: Python models and retrieval workflows, archived experiment artifacts in GitHub Actions, static JavaScript observational UI, and source-specific rather than one giant network-dependent CI. **GitHub Pages is the presentation layer, not an operational compute backend.**
 
-## Scientific communication contract
+## Run and verify locally
 
-An operational GitHub Actions success is only a successful *execution*. A positive fold is not a scientifically accepted model. Upstream-overlapping data are not independent validation. A nominal 90% interval coverage number from a separately trained model must never be presented as coverage of the dashboard's selected predictor. Hypothetical scenario sensitivities are not empirical forecasts. The observation map and all visualizations must preserve these distinctions.
+A fresh checkout supports a **no-secrets, no-network** research-quality check:
 
-Research and external replication contributors should begin with the methodological gaps and acceptance gates in the architecture document. The project welcomes independent scrutiny, including failure reports.
+```bash
+git clone https://github.com/EsanRAHIMI/earth-civilization-lab.git
+cd earth-civilization-lab
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install -e '.[dev]'
+python -m compileall -q src tests
+python -m unittest discover -s tests -p 'test_research_governance.py' -v
+python -m unittest discover -s tests -p 'test_scientific_release_gate.py' -v
+```
+
+See [Reproducibility](docs/REPRODUCIBILITY.md) for Windows setup, pinned spatial dependencies, original dataset download workflows, SHA-256 integrity, CI run artifacts, protected NASA Earthdata access, and how to **avoid accidental test leakage**.
+
+## Research and community
+
+The highest-value work is not adding more dashboards or green badges: it is independent physical observations, audited water/energy conservation, crop-specific masks and calendars, spatial/temporal tests, meaningful baselines and fresh blind validation. See [Research roadmap](docs/RESEARCH_ROADMAP.md) and [Scientific architecture](docs/EARTHLAB_RESEARCH_ARCHITECTURE_2026.md).
+
+**We welcome collaborators.** Open a [scientific proposal](https://github.com/EsanRAHIMI/earth-civilization-lab/issues/new/choose), file a reproducible bug, or submit a small PR. Read the [contribution guide](CONTRIBUTING.md), [security policy](SECURITY.md), and [code of conduct](CODE_OF_CONDUCT.md). Negative findings and corrections are first-class contributions.
+
+### Citation, licence and attribution
+
+Software source code is made available under [Apache License 2.0](LICENSE), subject to verification that contributors own the work they submit. **Upstream scientific datasets retain their separate rights** and are not relicensed by this repository.
+
+To cite this code, use GitHub's **Cite this repository** button ([CITATION.cff](CITATION.cff)) and identify the **commit SHA or archived version**. No project DOI or peer-reviewed EarthLab paper is claimed. For scientific results, also cite each underlying data product and version; see [CodeMeta](codemeta.json).
+
+---
+
+*Earth Civilization Lab is an open scientific project in active development. Success means trustworthy independent replication, not a high star count.*
