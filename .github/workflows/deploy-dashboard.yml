@@ -156,6 +156,19 @@ jobs:
           test -s web/model/evidence-index.json
           test -s web/model/pipeline-runs.json
           grep -q 'EARTH CIVILIZATION LAB' web/index.html
+      - name: Validate inline dashboard JavaScript and required mission controls
+        run: |
+          python - <<'PY'
+          import pathlib,re
+          html=pathlib.Path('web/index.html').read_text()
+          scripts=re.findall(r'<script(?:\\s[^>]*)?>(.*?)</script>',html,re.S|re.I)
+          inline='\n'.join(s for s in scripts if s.strip())
+          if not inline:raise SystemExit('No dashboard JavaScript')
+          pathlib.Path('/tmp/earthlab-dashboard.js').write_text(inline)
+          for target in ('missionBlockers','missionPipelines','missionEvidence','missionGate','missionState','missionClimate','missionCrop'):
+              if not re.search(r'id="'+target+'"',html):raise SystemExit('Missing dashboard control '+target)
+          PY
+          node --check /tmp/earthlab-dashboard.js
       - name: Upload Pages output
         uses: actions/upload-pages-artifact@v4
         with:
