@@ -1,0 +1,6 @@
+# Maintainer review for scientific release gates, workflows and public dashboard
+* @EsanRAHIMI
+/.github/workflows/ @EsanRAHIMI
+/src/scientific_release_gate_v2.py @EsanRAHIMI
+/src/coupled_operational_verdict.py @EsanRAHIMI
+/web/ @EsanRAHIMI
