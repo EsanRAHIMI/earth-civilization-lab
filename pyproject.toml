@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=75,<82"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "earth-civilization-lab"
+version = "0.1.0"
+description = "Open research infrastructure for reproducible Earth-system observations and experimental climate-water-food benchmarks"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "Apache-2.0"
+authors = [{name = "Ehsan Rahimi"}]
+keywords = ["earth-science", "hydrology", "climate", "crop-yield", "reproducible-research"]
+classifiers = ["Development Status :: 3 - Alpha", "Programming Language :: Python :: 3", "License :: OSI Approved :: Apache Software License", "Topic :: Scientific/Engineering"]
+
+[project.optional-dependencies]
+spatial = [
+    "numpy==2.2.6",
+    "netCDF4==1.7.2",
+    "shapely==2.1.2",
+    "pyproj==3.7.2",
+]
+research = [
+    "numpy==2.2.6",
+    "netCDF4==1.7.2",
+    "shapely==2.1.2",
+    "pyproj==3.7.2",
+    "earthaccess==0.16.0",
+]
+dev = ["pytest>=8.3,<10", "ruff>=0.13,<0.17", "PyYAML>=6,<7", "cffconvert>=2,<3"]
+
+[project.urls]
+Homepage = "https://esanrahimi.github.io/earth-civilization-lab/"
+Repository = "https://github.com/EsanRAHIMI/earth-civilization-lab"
+Issues = "https://github.com/EsanRAHIMI/earth-civilization-lab/issues"
+Documentation = "https://github.com/EsanRAHIMI/earth-civilization-lab/tree/main/docs"
+
+[tool.setuptools.packages.find]
+include = ["src*"]
+exclude = ["tests*", "web*", "data*", "reports*"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
