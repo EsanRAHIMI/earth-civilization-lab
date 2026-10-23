@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this research software, cite the repository and the exact commit or archived release used."
+title: "Earth Civilization Lab: Observations and Reproducible Earth–Society Research Benchmarks"
+type: software
+authors:
+  - given-names: Ehsan
+    family-names: Rahimi
+    affiliation: "Independent research"
+repository-code: "https://github.com/EsanRAHIMI/earth-civilization-lab"
+url: "https://esanrahimi.github.io/earth-civilization-lab/"
+abstract: "Open-source, exploratory scientific software for Earth-system observations, provenance-aware benchmarking and physically constrained research experiments. Not an operationally validated global digital twin."
+keywords:
+  - earth system science
+  - climate
+  - hydrology
+  - crop yield
+  - scientific reproducibility
+  - open science
+  - geospatial
+license: Apache-2.0
