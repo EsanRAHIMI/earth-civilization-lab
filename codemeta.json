@@ -1,0 +1,28 @@
+{
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "@type": "SoftwareSourceCode",
+  "name": "Earth Civilization Lab",
+  "description": "Reproducible Earth-system observation and exploratory physical/statistical research benchmarks; not an operational global forecast.",
+  "codeRepository": "https://github.com/EsanRAHIMI/earth-civilization-lab",
+  "url": "https://esanrahimi.github.io/earth-civilization-lab/",
+  "programmingLanguage": [
+    "Python",
+    "JavaScript"
+  ],
+  "license": "https://spdx.org/licenses/Apache-2.0",
+  "author": {
+    "@type": "Person",
+    "givenName": "Ehsan",
+    "familyName": "Rahimi"
+  },
+  "keywords": [
+    "Earth system science",
+    "hydrology",
+    "climate",
+    "agriculture",
+    "reproducibility",
+    "open science"
+  ],
+  "developmentStatus": "active research prototype",
+  "issueTracker": "https://github.com/EsanRAHIMI/earth-civilization-lab/issues"
+}
