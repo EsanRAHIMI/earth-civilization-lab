@@ -1,0 +1,31 @@
+name: Reproducible bug
+description: Report an observed and minimal software or data integrity defect
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: What failed?
+      description: Expected versus actual behavior; include dataset and metric when relevant
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Include exact command, OS, Python version, commit SHA and redacted logs
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Source provenance and impact
+      description: Links to public workflow runs, hashes, dates and affected scientific claims
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Data safety
+      options:
+        - label: I removed secrets and private/restricted observations from this report
+          required: true
