@@ -1,0 +1,63 @@
+name: Research software quality (offline PR gate)
+on:
+  pull_request:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'docs/**'
+      - 'web/**'
+      - 'pyproject.toml'
+      - 'CITATION.cff'
+      - 'codemeta.json'
+      - 'CONTRIBUTING.md'
+      - '.github/workflows/research-quality.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: research-quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  smoke:
+    name: Python source, governance and offline science contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.12']
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Compile Python sources without downloading data
+        run: python -m compileall -q src tests
+      - name: Offline release gate, provenance and community contract
+        run: |
+          python -m unittest discover -s tests -p 'test_research_governance.py' -v
+          python -m unittest discover -s tests -p 'test_scientific_release_gate.py' -v
+          python -m unittest discover -s tests -p 'test_coupled_operational_verdict.py' -v
+          python -m unittest discover -s tests -p 'test_dashboard_evidence_manifest.py' -v
+  public-ui:
+    name: Dashboard syntax and source safety
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Parse inline dashboard JavaScript
+        run: |
+          python - <<'PY'
+          import pathlib,re
+          html=pathlib.Path('web/index.html').read_text()
+          pieces=re.findall(r'<script(?:\\s[^>]*)?>(.*?)</script>',html,re.I|re.S)
+          if not pieces:raise SystemExit("Dashboard has no JavaScript")
+          pathlib.Path('/tmp/earthlab-dashboard-ci.js').write_text('\n'.join(pieces))
+          PY
+          node --check /tmp/earthlab-dashboard-ci.js
