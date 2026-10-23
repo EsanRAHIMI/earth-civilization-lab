@@ -35,6 +35,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Verify installation of clean research package
+        run: |
+          python -m pip install --no-deps -e .
+          cd /tmp
+          python -c 'import src.scientific_release_gate_v2; import src.coupled_operational_verdict; print("Clean environment import OK")'
       - name: Compile Python sources without downloading data
         run: python -m compileall -q src tests
       - name: Offline release gate, provenance and community contract
