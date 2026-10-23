@@ -1,0 +1,31 @@
+name: Scientific validation or model proposal
+description: Propose new physically meaningful variables, datasets or reproducible tests
+title: "[Science]: "
+labels: ["research"]
+body:
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: Falsifiable scientific question
+      description: State a physical target, not just a proposed machine learning architecture
+    validations:
+      required: true
+  - type: textarea
+    id: data
+    attributes:
+      label: Dataset and measurement provenance
+      description: Provider, product DOI, uncertainty, units, spatial/temporal support, licensing and independent comparator
+    validations:
+      required: true
+  - type: textarea
+    id: design
+    attributes:
+      label: Evaluation design and baselines
+      description: Fixed geographic blocks, time split, prediction issue time, no-leakage plan, competing model and uncertainty scoring
+    validations:
+      required: true
+  - type: textarea
+    id: reproducible
+    attributes:
+      label: Reproduction and expected falsification
+      description: Commands, available artifacts, preregistration / blind data sources, and when to reject the hypothesis
