@@ -1,0 +1,15 @@
+Earth Civilization Lab
+Copyright 2026 Earth Civilization Lab contributors
+
+Source code is licensed under the Apache License, Version 2.0.
+See LICENSE for the applicable terms.
+
+This repository references and may programmatically retrieve external scientific
+datasets from NASA, NOAA, Met Office, FAO, World Bank, Copernicus/ECMWF and
+Natural Earth, among others. Those external datasets are NOT automatically
+licensed under Apache-2.0; each source retains its applicable terms, citation
+requirements and distribution limitations. This notice is not a substitute for
+product-specific legal and scientific attribution.
+
+Research outputs may include historical or preliminary estimations and must
+not be treated as validated long-range physical forecasts.
