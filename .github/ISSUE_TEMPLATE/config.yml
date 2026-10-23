@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Reproducibility and scientific acceptance criteria
+    url: https://github.com/EsanRAHIMI/earth-civilization-lab/blob/main/docs/REPRODUCIBILITY.md
+    about: Read the source/provenance/validation contract before reporting model improvements
